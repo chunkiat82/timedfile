@@ -129,6 +129,7 @@ function run() {
       var parentHash3 = await saveAsCommit(tree, parentHash2, commit3);
       console.log(`contentHash3=${contentHash3} parentHash3=${parentHash3}`);
 
+      /* reverse loop up */
       let nextParentHash = parentHash3;
       while (true) {
         const loadedCommit = await loadCommit(nextParentHash);
@@ -139,10 +140,6 @@ function run() {
         } else {
           break;
         }
-        //    else {
-        //       nextParentHash = undefined;
-        //   }
-
       }
 
 
