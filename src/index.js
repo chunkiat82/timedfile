@@ -40,29 +40,19 @@ function saveAsCommit(tree, parent, commit) {
   });
 }
 
-function loadCommit(hashInput) {
+function loadCommit(parentHash) {
   return new Promise((resolve, reject) => {
-    repo.loadAs("commit", hashInput, (err, commit, parentHash) => {
+    repo.loadAs("commit", parentHash, (err, commit) => {
       if (err) return reject(err);
-      resolve({
-        commit,
-        parentHash
-      });
+      resolve(commit);
     });
   });
 }
 
-async function onLoadCommit(commit, parentHash) {
-  console.log(JSON.stringify(commit, null, 2));
-  return await loadTree(commit.tree);
-  // if (commit.parents) {
-  //   commit.parents.forEach(loadCommit);
-  // }
-}
-
-function loadTree(hash) {
+function loadTree(commit) {
+  var treeHash = commit.tree;
   return new Promise((resolve, reject) => {
-    repo.loadAs("tree", hash, (err, tree) => {
+    repo.loadAs("tree", treeHash, (err, tree) => {
       //console.log("TREE", hash, tree);
       if (err) return reject(err);
       resolve(tree);
@@ -71,15 +61,13 @@ function loadTree(hash) {
 }
 
 function printTree(tree) {
-  if (err) throw err;
-  console.log("TREE", hash, tree);
-  tree.forEach(onEntry);
-}
-
-function onEntry(entry) {
-  repo.loadAs("blob", entry.hash, function(err, blob) {
-    if (err) throw err;
-    console.log("BLOB", entry.hash, blob);
+  tree.forEach((entry) => {
+    repo.loadAs("blob", entry.hash, function(err, blob) {
+      if (err) throw err;
+      console.log("BLOB", entry.hash, blob);
+    //   var bufferBase64 = new Buffer( blob ).toString('base64');
+      console.log("CONTENT", blob.toString('utf8'));
+    });
   });
 }
 
@@ -98,7 +86,7 @@ function run() {
   var commit1 = {
     author,
     committer,
-    message: "Initial Commit1\n",
+    message: "Initial Commit\n",
     filename,
     contents: "# This is a test Repo\n\nIt's generated entirely by JavaScript\n"
   };
@@ -106,9 +94,17 @@ function run() {
   var commit2 = {
     author,
     committer,
-    message: "Initial Commit2\n",
+    message: "Second Commit\n",
     filename,
     contents: "# This is a test Repo\n\nIt's generated entirely by JavaScript\n Commit 2"
+  };
+
+  var commit3 = {
+    author,
+    committer,
+    message: "Third Commit\n",
+    filename,
+    contents: "# Hello World People. Time to sleep."
   };
 
   repo.setHead("master", async function(err) {
@@ -128,11 +124,28 @@ function run() {
       var parentHash2 = await saveAsCommit(tree, parentHash1, commit2);
       console.log(`contentHash2=${contentHash2} parentHash2=${parentHash2}`);
 
-      const {
-        commit: commit22,
-        parentHash: parentHash
-      } = await loadCommit(parentHash2);
-      await onLoadCommit(commit22, parentHash);
+      var contentHash3 = await saveAsBlob(tree, commit3);
+      console.log(`tree at commit 3=${JSON.stringify(tree)}`);
+      var parentHash3 = await saveAsCommit(tree, parentHash2, commit3);
+      console.log(`contentHash3=${contentHash3} parentHash3=${parentHash3}`);
+
+      let nextParentHash = parentHash3;
+      while (true) {
+        const loadedCommit = await loadCommit(nextParentHash);
+        const tree = await loadTree(loadedCommit);
+        printTree(tree);
+        if (Array.isArray(loadedCommit.parents) && loadedCommit.parents.length > 0) {
+          nextParentHash = loadedCommit.parents[0];
+        } else {
+          break;
+        }
+        //    else {
+        //       nextParentHash = undefined;
+        //   }
+
+      }
+
+
 
     } catch (e) {
       console.error(e);
