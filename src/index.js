@@ -6,37 +6,35 @@ var pathname = `${__dirname}/gitFolder`;
 var path = basename(pathname);
 var repo = git.repo(path);
 
-var repo1 = git.repo("test.git");
-
 function saveAsBlob(tree, commit) {
   return new Promise((resolve, reject) => {
-    repo.saveAs("blob", commit.contents, function(err, hash) {
+    repo.saveAs("blob", commit.contents, function(err, contentHash) {
       if (err) return reject(err);
       tree[commit.filename] = {
         mode: 644,
-        hash: hash
+        hash: contentHash
       };
-      resolve(hash);
+      resolve(contentHash);
     });
   });
 }
 
 function saveAsCommit(tree, parent, commit) {
   return new Promise((resolve, reject) => {
-    repo.saveAs("tree", tree, function(err, hash) {
+    repo.saveAs("tree", tree, function(err, filenameHash) {
       if (err) return reject(err);
       var gitCommmit = {
-        tree: hash,
+        tree: filenameHash,
         parent: parent,
         author: commit.author,
         committer: commit.committer,
         message: commit.message
       };
       if (!parent) delete commit.parent;
-      repo.saveAs("commit", gitCommmit, function(err, hash) {
+      repo.saveAs("commit", gitCommmit, function(err, parentHash) {
         if (err) return reject(err);
-        repo.updateHead(hash);
-        resolve(hash);
+        repo.updateHead(parentHash);
+        resolve(parentHash);
       });
     });
   });
@@ -44,20 +42,19 @@ function saveAsCommit(tree, parent, commit) {
 
 function loadCommit(hashInput) {
   return new Promise((resolve, reject) => {
-    repo.loadAs("commit", hashInput, (err, commit, hash) => {
+    repo.loadAs("commit", hashInput, (err, commit, parentHash) => {
       if (err) return reject(err);
       resolve({
         commit,
-        hash
+        parentHash
       });
     });
   });
 }
 
-function onCommit(commit, hash) {
-
-  console.log("COMMIT", hash, commit);
-  loadTree(commit.tree);
+async function onLoadCommit(commit, parentHash) {
+  console.log(JSON.stringify(commit, null, 2));
+  return await loadTree(commit.tree);
   // if (commit.parents) {
   //   commit.parents.forEach(loadCommit);
   // }
@@ -65,15 +62,11 @@ function onCommit(commit, hash) {
 
 function loadTree(hash) {
   return new Promise((resolve, reject) => {
-    try {
-      repo.loadAs("tree", hash, (err, tree) => {
-        console.log("TREE", hash, tree);
-        if (err) return reject(err);
-        resolve(tree);
-      });
-    } catch (err) {
-      console.log(err);
-    }
+    repo.loadAs("tree", hash, (err, tree) => {
+      //console.log("TREE", hash, tree);
+      if (err) return reject(err);
+      resolve(tree);
+    });
   });
 }
 
@@ -124,21 +117,22 @@ function run() {
 
     try {
       var tree = {};
-      var hash1 = await saveAsBlob(tree, commit1);
+
+      var contentHash1 = await saveAsBlob(tree, commit1);
+      console.log(`tree at commit 1=${JSON.stringify(tree)}`);
       var parentHash1 = await saveAsCommit(tree, null, commit1);
-      console.log(`hash1=${hash1} parentHash1=${parentHash1}`);
-      const {commit, hash: hash2 } = await loadCommit(parentHash1);
-      console.log(`hash2=${hash2}`);
-      await onCommit(hash2);
-      //   var hash2 = await saveAsBlob(tree, hash1, commit2);
-      //   console.log(tree);
-      //
-      //   let hash = tree['README.md'].hash;
-      //   console.log(hash);
-      //
-      //   const {commit, hash: hash1 } = await loadCommit(hash);
-      //   onCommit(commit,hash1)
-      //   console.log(`loadedTree=${JSON.stringify(loadedTree)}`);
+      console.log(`contentHash1=${contentHash1} parentHash1=${parentHash1}`);
+
+      var contentHash2 = await saveAsBlob(tree, commit2);
+      console.log(`tree at commit 2=${JSON.stringify(tree)}`);
+      var parentHash2 = await saveAsCommit(tree, parentHash1, commit2);
+      console.log(`contentHash2=${contentHash2} parentHash2=${parentHash2}`);
+
+      const {
+        commit: commit22,
+        parentHash: parentHash
+      } = await loadCommit(parentHash2);
+      await onLoadCommit(commit22, parentHash);
 
     } catch (e) {
       console.error(e);
