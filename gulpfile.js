@@ -1,3 +1,4 @@
+require('babel-polyfill');
 const gulp = require('gulp');
 const loadPlugins = require('gulp-load-plugins');
 const del = require('del');
@@ -6,6 +7,7 @@ const path = require('path');
 const isparta = require('isparta');
 const webpack = require('webpack');
 const webpackStream = require('webpack-stream');
+const babel = require('gulp-babel');
 
 const Instrumenter = isparta.Instrumenter;
 const mochaGlobals = require('./test/setup/.globals');
@@ -31,6 +33,7 @@ function cleanTmp(done) {
 // Lint a set of files
 function lint(files) {
   return gulp.src(files)
+    .pipe(babel())
     .pipe($.eslint())
     .pipe($.eslint.format())
     .pipe($.eslint.failAfterError());
@@ -41,7 +44,7 @@ function lintSrc() {
 }
 
 function lintTest() {
-  return lint('test/**/*.js');
+  return lint('test/unit/**/*.js');
 }
 
 function lintGulpfile() {
@@ -92,7 +95,6 @@ function _registerBabel() {
 }
 
 function test() {
-  _registerBabel();
   return _mocha();
 }
 
@@ -116,53 +118,6 @@ const watchFiles = ['src/**/*', 'test/**/*', 'package.json', '**/.eslintrc'];
 // Run the headless unit tests as you make changes.
 function watch() {
   gulp.watch(watchFiles, ['test']);
-}
-
-function testBrowser() {
-  // Our testing bundle is made up of our unit tests, which
-  // should individually load up pieces of our application.
-  // We also include the browser setup file.
-  const testFiles = glob.sync('./test/unit/**/*.js');
-  const allFiles = ['./test/setup/browser.js'].concat(testFiles);
-
-  // Lets us differentiate between the first build and subsequent builds
-  var firstBuild = true;
-
-  // This empty stream might seem like a hack, but we need to specify all of our files through
-  // the `entry` option of webpack. Otherwise, it ignores whatever file(s) are placed in here.
-  return gulp.src('')
-    .pipe($.plumber())
-    .pipe(webpackStream({
-      watch: true,
-      entry: allFiles,
-      output: {
-        filename: '__spec-build.js'
-      },
-      // Externals isn't necessary here since these are for tests.
-      module: {
-        loaders: [
-          // This is what allows us to author in future JavaScript
-          {test: /\.js$/, exclude: /node_modules/, loader: 'babel-loader'},
-          // This allows the test setup scripts to load `package.json`
-          {test: /\.json$/, exclude: /node_modules/, loader: 'json-loader'}
-        ]
-      },
-      plugins: [
-        // By default, webpack does `n=>n` compilation with entry files. This concatenates
-        // them into a single chunk.
-        new webpack.optimize.LimitChunkCountPlugin({maxChunks: 1})
-      ],
-      devtool: 'inline-source-map'
-    }, null, () => {
-      if (firstBuild) {
-        $.livereload.listen({port: 35729, host: 'localhost', start: true});
-        gulp.watch(watchFiles, ['lint']);
-      } else {
-        $.livereload.reload('./tmp/__spec-build.js');
-      }
-      firstBuild = false;
-    }))
-    .pipe(gulp.dest('./tmp'));
 }
 
 // Remove the built files
@@ -191,9 +146,6 @@ gulp.task('test', ['lint'], test);
 
 // Set up coverage and run tests
 gulp.task('coverage', ['lint'], coverage);
-
-// Set up a livereload environment for our spec runner `test/runner.html`
-gulp.task('test-browser', ['lint', 'clean-tmp'], testBrowser);
 
 // Run the headless unit tests as you make changes.
 gulp.task('watch', watch);
