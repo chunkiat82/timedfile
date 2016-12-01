@@ -1,3 +1,4 @@
+import fs from 'fs';
 import path from 'path';
 import TimedFile from '../../src/lib/index';
 import {
@@ -5,9 +6,10 @@ import {
 } from 'mocha-logger';
 
 const PATH_DELIMITER = '/';
+const gitTestFolder = [__dirname, '..', 'testcases', 'git'].join(PATH_DELIMITER);
 
 describe('TimedFile', () => {
-  describe('Class Functionalities', () => {
+  describe('Functionalities Present', () => {
     it('class created', () => {
       const timedFile = new TimedFile(`${__dirname}/LICENSE`);
       expect(timedFile).to.have.property('save');
@@ -18,13 +20,13 @@ describe('TimedFile', () => {
 
   });
 
-  describe('Greet function', () => {
-
-    const gitTestFolder = [__dirname, '..', 'testcases', 'git'].join(PATH_DELIMITER);
-
+  describe('Able to Save', () => {
+    const fullFilePath = [gitTestFolder, 'saveTest.js'].join(PATH_DELIMITER);
     it('class created', () => {
-      const timedFile = new TimedFile([gitTestFolder, 'testfile.js'].join(PATH_DELIMITER));
-      log(timedFile);
+      const timedFile = new TimedFile(fullFilePath);
+      fs.appendFileSync(fullFilePath, 'Line 1\n');
+      timedFile.save({name:'Raymond Ho', email:'chunkiat82@gmail.com'});
+      // timedFile.diff();
     });
   });
 });

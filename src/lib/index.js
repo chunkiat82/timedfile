@@ -1,16 +1,21 @@
 import { basename, dirname } from 'path';
 import git from 'git-node';
+import fs from 'fs';
 
-const message = 'Raymond Ho @ 2016';
+const FIXED_MESSAGE = 'Raymond Ho @ 2016';
 
 export default class TimedFile {
-  constructor(fileFullpath) {
-    this.fileFullpath = fileFullpath;
-    this.directory = dirname(this.fileFullpath);
-    this.filename = basename(this.fileFullpath);
+  constructor(fileFullPath) {
+    // console.log(`fileFullPath=${fileFullPath}`);
+    this.fileFullPath = fileFullPath;
+    this.directory = dirname(this.fileFullPath);
+    this.filename = basename(this.fileFullPath);
     this.repo = git.repo(this.directory);
     this.tree = {};
     this.parentHash = null;
+
+    // this.save = this.save.bind(this);
+    // this.diff = this.diff.bind(this);
   }
 
   /* sample commit
@@ -19,12 +24,18 @@ export default class TimedFile {
         contents: "# This is a test Repo\n\nIt's generated entirely by JavaScript\n"
       };
   */
-  _saveBlob(commit) {
+  _saveBlob = (commit) => {
     const that = this;
 
-    const { contents, author } = commit;
+    const filename = { that };
 
-    const gitCommit = { author, committer: author, filename: that, filename, contents, message };
+    const { contents, name, email } = commit;
+
+    const author = `${name} <${email}>`;
+
+    const message = FIXED_MESSAGE;
+
+    const gitCommit = { author, committer: author, filename, contents, message };
 
     return new Promise((resolve, reject) => {
       that.repo.saveAs("blob", contents, function (err, contentsHash) {
@@ -39,13 +50,19 @@ export default class TimedFile {
     });
   }
 
-  _saveAsCommit(commit) {
+  _saveAsCommit = (commit) => {
 
     const that = this;
 
-    const { tree, parentHash } = that;
+    const { filename, tree, parentHash } = that;
 
-    const gitCommit = { author, parent: parentHash, committer: author, filename: that, filename, contents, message };
+    const { contents, name, email } = commit;
+
+    const author = `${name} <${email}>`;
+
+    const message = FIXED_MESSAGE;
+
+    const gitCommit = { author, parent: parentHash, committer: author, filename, contents, message };
 
     return new Promise((resolve, reject) => {
       //get a new parent
@@ -64,14 +81,19 @@ export default class TimedFile {
     });
   }
 
-  /* options = { author, contents } */
-  async save(commit) {
+ save = async (author) =>{
     var that = this;
+
+    const { fileFullPath } = that;
+    console.log(`fullFilePath=${this.fileFullPath}`);
     try {
-      // do nothing if contentsHash
-      const contentsHash = await _saveBlob(commit);
-      const parentHash = await _saveAsCommit(commit);
-      that.parentHash = parentHash;
+      const { name, email } = author;
+      const contents = fs.readFileSync(fileFullPath).toString();
+      const commit = { name, email, contents};
+
+      // const contentsHash = await _saveBlob(commit);
+      // const parentHash = await _saveAsCommit(commit);
+      // that.parentHash = parentHash;
 
     } catch (e) {
       throw new Error(e);
@@ -79,10 +101,10 @@ export default class TimedFile {
 
   }
 
-  diff() { }
+  diff = () => { console.log(this.fileFullPath);}
 
-  rollForward() { }
+  rollForward = () => { }
 
-  rollBack() { }
+  rollBack = () => { }
 
 }
