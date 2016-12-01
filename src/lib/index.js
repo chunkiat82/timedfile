@@ -5,15 +5,16 @@ import fs from 'fs';
 const FIXED_MESSAGE = 'Raymond Ho @ 2016';
 
 export default class TimedFile {
-  constructor(fileFullPath) {
-    // console.log(`fileFullPath=${fileFullPath}`);
+   constructor(options) {
+
+    const {fileFullPath, author } = options;
+
     this.fileFullPath = fileFullPath;
     this.directory = dirname(this.fileFullPath);
     this.filename = basename(this.fileFullPath);
     this.repo = git.repo(this.directory);
     this.tree = {};
-    this.parentHash = null;
-
+    this.parentHash = null;  
     // this.save = this.save.bind(this);
     // this.diff = this.diff.bind(this);
   }
@@ -27,25 +28,25 @@ export default class TimedFile {
   _saveBlob = (commit) => {
     const that = this;
 
-    const filename = { that };
+    const { filename, repo, tree } = that;
 
-    const { contents, name, email } = commit;
+    const { contents, author } = commit;
 
-    const author = `${name} <${email}>`;
+    // const author = `${name} <${email}>`;
 
     const message = FIXED_MESSAGE;
 
     const gitCommit = { author, committer: author, filename, contents, message };
 
     return new Promise((resolve, reject) => {
-      that.repo.saveAs("blob", contents, function (err, contentsHash) {
+      repo.saveAs("blob", contents, function (err, contentsHash) {
         if (err)
           return reject(err);
         tree[filename] = {
           mode: 644,
           hash: contentsHash
         };
-        resolve(contentHash);
+        resolve(contentsHash);
       });
     });
   }
@@ -54,11 +55,11 @@ export default class TimedFile {
 
     const that = this;
 
-    const { filename, tree, parentHash } = that;
+    const { filename, tree, parentHash, repo } = that;
 
-    const { contents, name, email } = commit;
+    const { contents, author } = commit;
 
-    const author = `${name} <${email}>`;
+    // const author = `${name} <${email}>`;
 
     const message = FIXED_MESSAGE;
 
@@ -81,19 +82,19 @@ export default class TimedFile {
     });
   }
 
- save = async (author) =>{
+  save = async (author) => {
     var that = this;
 
     const { fileFullPath } = that;
-    console.log(`fullFilePath=${this.fileFullPath}`);
+    // console.log(`fullFilePath=${this.fileFullPath}`);
     try {
-      const { name, email } = author;
+      // const { name, email } = author;
       const contents = fs.readFileSync(fileFullPath).toString();
-      const commit = { name, email, contents};
+      const commit = { author, contents };
 
-      // const contentsHash = await _saveBlob(commit);
-      // const parentHash = await _saveAsCommit(commit);
-      // that.parentHash = parentHash;
+      const contentsHash = await this._saveBlob(commit);
+      const parentHash = await this._saveAsCommit(commit);
+      that.parentHash = parentHash;
 
     } catch (e) {
       throw new Error(e);
@@ -101,7 +102,7 @@ export default class TimedFile {
 
   }
 
-  diff = () => { console.log(this.fileFullPath);}
+  diff = () => { console.log(this.fileFullPath); }
 
   rollForward = () => { }
 
