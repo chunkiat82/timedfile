@@ -20,22 +20,25 @@ describe('TimedFile', () => {
   });
 
   describe('Able to Save', () => {
+
     const fileFullPath = [gitTestFolder, 'saveTest.js'].join(PATH_DELIMITER);
     it('class created', () => {
 
       const author = { name: 'Raymond Ho', email: 'chunkiat82@gmail.com' };
       const timedFile = new TimedFile({ fileFullPath });
-      fs.writeFileSync(fileFullPath, 'Line 1\n');      
+      fs.writeFileSync(fileFullPath, 'Line 1\n');
       try {
         timedFile.save(author).then(() => {
           fs.appendFileSync(fileFullPath, 'Line 2\n');
-          timedFile.save(author);          
-          // console.log(timedFile.tree);
+          timedFile.save(author).then(() => {
+            fs.appendFileSync(fileFullPath, 'Line 3\n');
+            timedFile.diff();
+          });
         });
       } catch (e) {
         console.log(e);
       }
-            
+
     });
   });
 

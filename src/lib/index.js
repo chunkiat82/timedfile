@@ -3,8 +3,8 @@ import git from 'git-node';
 import fs from 'fs';
 require('colors');
 var jsdiff = require('diff');
+var debug = require('debug')('timedfile');
 
-console.log(jsdiff);
 const FIXED_MESSAGE = 'Raymond Ho @ 2016';
 
 export default class TimedFile {
@@ -69,11 +69,11 @@ export default class TimedFile {
 
       repo.saveAs("tree", tree, function (err, treeHash) {
         if (err) return reject(err);
-        console.log(`treeHash=${treeHash}`);
+        debug(`treeHash=${treeHash}`);
         const treeCommit = Object.assign({}, gitCommit, { tree: treeHash });
         if (commitHash === null) delete commit.parent;
 
-        // console.log(`treeCommit=${JSON.stringify(treeCommit, null, 4)}`);
+        // debug(`treeCommit=${JSON.stringify(treeCommit, null, 4)}`);
 
         repo.saveAs("commit", treeCommit, function (err, commitHash) {
           if (err) return reject(err);
@@ -91,14 +91,14 @@ export default class TimedFile {
 
     const commitTreeHash = commit.tree;
     return new Promise((resolve, reject) => {
-      // console.log(`repo=${repo}`);
+      // debug(`repo=${repo}`);
       repo.loadAs("tree", commitTreeHash, (err, tree) => {
 
         if (err) {
-          // console.log(`err=${JSON.stringify(err, null, 2)}`);
+          // debug(`err=${JSON.stringify(err, null, 2)}`);
           return reject(err);
         }
-        // console.log(`tree=${JSON.stringify(tree, null, 2)}`);
+        // debug(`tree=${JSON.stringify(tree, null, 2)}`);
         resolve(tree);
       });
     });
@@ -136,37 +136,19 @@ export default class TimedFile {
       const commit = { author, contents };
 
       const contentsHash = await that._saveBlob(commit);
-      console.log(`contentsHash=${contentsHash}`);
+      debug(`contentsHash=${contentsHash}`);
       that.commitHash = await that._saveAsCommit(commit);
-      console.log(`that.commitHash=${that.commitHash}`);
+      debug(`that.commitHash=${that.commitHash}`);
 
       const headCommit = await that._loadCommit(that.commitHash);
-      console.log(`headCommit=${JSON.stringify(headCommit, null, 2)}`);
+      debug(`headCommit=${JSON.stringify(headCommit, null, 2)}`);
       const loadTree = await that._loadTree(headCommit);
-      console.log(`loadTree=${JSON.stringify(loadTree, null, 2)}`);
+      debug(`loadTree=${JSON.stringify(loadTree, null, 2)}`);
       const text = await that._load(contentsHash)
-      console.log(`text=${text}`);
-      // 
+      debug(`text=${text}`);
 
-      /*test */
-      if (headCommit.parents.length > 0) {
-        console.log(`-----------------------`);
-        const headCommit1 = await that._loadCommit(headCommit.parents[0]);
-        console.log(`headCommit1=${JSON.stringify(headCommit1, null, 2)}`);
-        const loadTree1 = await that._loadTree(headCommit1);
-        console.log(`loadTree1=${JSON.stringify(loadTree1, null, 2)}`);
-        const text1 = await that._load(loadTree1[0].hash)
-        console.log(`text1=${text1}`);
-        var diffs= [];
-        jsdiff.diffChars(text1, text).forEach(function (part) {
-          // green for additions, red for deletions 
-          // grey for common parts 
-          var color = part.added ? 'green' :
-            part.removed ? 'red' : 'grey';
-          diffs.push(part.value[color]);
-        });
-        console.log(diffs.join(''));        
-      }
+
+
     } catch (e) {
       throw new Error(e);
 
@@ -174,7 +156,31 @@ export default class TimedFile {
 
   }
 
-  diff = () => { console.log(this.fileFullPath); }
+  diff = async () => {
+    const that = this;
+    const { commitHash, fileFullPath } = that;
+
+    const currentText = fs.readFileSync(fileFullPath).toString();
+
+
+    debug(`-----------------------`);
+    const headCommit1 = await that._loadCommit(commitHash);
+    debug(`headCommit1=${JSON.stringify(headCommit1, null, 2)}`);
+    const loadTree1 = await that._loadTree(headCommit1);
+    debug(`loadTree1=${JSON.stringify(loadTree1, null, 2)}`);
+    const loadText = await that._load(loadTree1[0].hash)
+    debug(`loadText=${loadText}`);
+    var diffs = [];
+    jsdiff.diffChars(loadText, currentText).forEach(function (part) {
+      // green for additions, red for deletions 
+      // grey for common parts 
+      var color = part.added ? 'green' :
+        part.removed ? 'red' : 'grey';
+      diffs.push(part.value[color]);
+    });
+    console.log(diffs.join(''));
+    
+  }
 
   rollForward = () => { }
 
