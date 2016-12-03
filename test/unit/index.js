@@ -26,15 +26,22 @@ describe('TimedFile', () => {
 
       const author = { name: 'Raymond Ho', email: 'chunkiat82@gmail.com' };
       const timedFile = new TimedFile({ fileFullPath });
-      fs.createFile(fileFullPath, 'Line 1\n');
-      timedFile.save(author);
-      fs.appendFileSync(fileFullPath, 'Line 2\n');
-      timedFile.save(author);
+      fs.writeFileSync(fileFullPath, 'Line 1\n');      
+      try {
+        timedFile.save(author).then(() => {
+          fs.appendFileSync(fileFullPath, 'Line 2\n');
+          timedFile.save(author);          
+          // console.log(timedFile.tree);
+        });
+      } catch (e) {
+        console.log(e);
+      }
+            
     });
   });
 
   // after('Tear Down', () => {
-  //   // setTimeout(()=>{fs.removeSync(gitTestFolder)}, 200);
+  //   setTimeout(()=>{fs.removeSync(gitTestFolder)}, 200);
   // });
 
 });

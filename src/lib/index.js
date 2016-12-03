@@ -5,7 +5,7 @@ import fs from 'fs';
 const FIXED_MESSAGE = 'Raymond Ho @ 2016';
 
 export default class TimedFile {
-   constructor(options) {
+  constructor(options) {
 
     const {fileFullPath, author } = options;
 
@@ -14,9 +14,7 @@ export default class TimedFile {
     this.filename = basename(this.fileFullPath);
     this.repo = git.repo(this.directory);
     this.tree = {};
-    this.parentHash = null;  
-    // this.save = this.save.bind(this);
-    // this.diff = this.diff.bind(this);
+    this.headHash = null;
   }
 
   /* sample commit
@@ -55,7 +53,7 @@ export default class TimedFile {
 
     const that = this;
 
-    const { filename, tree, parentHash, repo } = that;
+    const { filename, tree, headHash, repo } = that;
 
     const { contents, author } = commit;
 
@@ -63,21 +61,54 @@ export default class TimedFile {
 
     const message = FIXED_MESSAGE;
 
-    const gitCommit = { author, parent: parentHash, committer: author, filename, contents, message };
+    const gitCommit = { author, parent: headHash, committer: author, filename, contents, message };
 
     return new Promise((resolve, reject) => {
       //get a new parent
+
       repo.saveAs("tree", tree, function (err, treeHash) {
         if (err) return reject(err);
 
         const treeCommit = Object.assign({}, gitCommit, { tree: treeHash });
-        if (parentHash === null) delete commit.parent;
+        if (headHash === null) delete commit.parent;
 
-        repo.saveAs("commit", treeCommit, function (err, parentCommitHash) {
-          if (err) return reject(err);
-          repo.updateHead(parentCommitHash);
-          resolve(parentCommitHash);
+        console.log(`treeCommit=${JSON.stringify(treeCommit, null, 4)}`);
+
+        repo.saveAs("commit", treeCommit, function (err, headHash) {
+          if (err) return reject(err);          
+          repo.updateHead(headHash);
+          resolve(headHash);
         });
+      });
+    });
+  }
+
+  _loadTree = (commit) => {
+    const that = this;
+    const { repo } = that;
+
+    const commitTreeHash = commit.tree;
+    return new Promise((resolve, reject) => {
+      // console.log(`repo=${repo}`);
+      repo.loadAs("tree", commitTreeHash, (err, tree) => {
+
+        if (err) {
+          // console.log(`err=${JSON.stringify(err, null, 2)}`);
+          return reject(err);
+        }        
+        // console.log(`tree=${JSON.stringify(tree, null, 2)}`);
+        resolve(tree);
+      });
+    });
+  }
+
+  _loadCommit = (commitHash) => {
+    const that = this;
+    const { repo } = that;
+    return new Promise((resolve, reject) => {
+      repo.loadAs("commit", commitHash, (err, commit) => {
+        if (err) return reject(err);
+        resolve(commit);
       });
     });
   }
@@ -91,13 +122,16 @@ export default class TimedFile {
       // const { name, email } = author;
       const contents = fs.readFileSync(fileFullPath).toString();
       const commit = { author, contents };
-
-      const contentsHash = await this._saveBlob(commit);
-      const parentHash = await this._saveAsCommit(commit);
-      that.parentHash = parentHash;
-
+      const contentsHash = await that._saveBlob(commit);
+      const headCommitHash = await that._saveAsCommit(commit);
+      that.headHash = headCommitHash;
+      const headCommit = await that._loadCommit(headCommitHash);
+      const loadTree = await that._loadTree(headCommit);
+      console.log(`loadTree=${JSON.stringify(loadTree, null, 2)}`);
     } catch (e) {
+      console.log(e);
       throw new Error(e);
+
     }
 
   }
