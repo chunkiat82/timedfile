@@ -43,8 +43,8 @@ describe('TimedFile', () => {
     });
   });
 
-  // after('Tear Down', () => {
-  //   setTimeout(()=>{fs.removeSync(gitTestFolder)}, 200);
-  // });
+  after('Tear Down', () => {
+    setTimeout(()=>{fs.removeSync(gitTestFolder)}, 200);
+  });
 
 });
