@@ -67,9 +67,9 @@ export default class TimedFile {
     return new Promise((resolve, reject) => {
       //get a new parent
 
-      repo.saveAs("tree", tree, function (err, treeHash) {
+      repo.saveAs('tree', tree, function (err, treeHash) {
         if (err) return reject(err);
-        debug(`treeHash=${treeHash}`);
+        debug('treeHash = %s', treeHash);
         const treeCommit = Object.assign({}, gitCommit, { tree: treeHash });
         if (commitHash === null) delete commit.parent;
 
@@ -92,7 +92,7 @@ export default class TimedFile {
     const commitTreeHash = commit.tree;
     return new Promise((resolve, reject) => {
       // debug(`repo=${repo}`);
-      repo.loadAs("tree", commitTreeHash, (err, tree) => {
+      repo.loadAs('tree', commitTreeHash, (err, tree) => {
 
         if (err) {
           // debug(`err=${JSON.stringify(err, null, 2)}`);
@@ -108,7 +108,7 @@ export default class TimedFile {
     const that = this;
     const { repo } = that;
     return new Promise((resolve, reject) => {
-      repo.loadAs("commit", commitHash, (err, commit) => {
+      repo.loadAs('commit', commitHash, (err, commit) => {
         if (err) return reject(err);
         return resolve(commit);
       });
@@ -119,7 +119,7 @@ export default class TimedFile {
     const that = this;
     const { repo } = that;
     return new Promise((resolve, reject) => {
-      repo.loadAs("text", blobHash, (err, text) => {
+      repo.loadAs('text', blobHash, (err, text) => {
         if (err) return reject(err);
         return resolve(text);
       });
@@ -136,20 +136,18 @@ export default class TimedFile {
       const commit = { author, contents };
 
       const contentsHash = await that._saveBlob(commit);
-      debug(`contentsHash=${contentsHash}`);
+      debug('contentsHash = %s', contentsHash);
       that.commitHash = await that._saveAsCommit(commit);
-      debug(`that.commitHash=${that.commitHash}`);
-
+      debug('that.commitHash = %s', that.commitHash);
       const headCommit = await that._loadCommit(that.commitHash);
-      debug(`headCommit=${JSON.stringify(headCommit, null, 2)}`);
+      debug('headCommit = %s', headCommit);
       const loadTree = await that._loadTree(headCommit);
-      debug(`loadTree=${JSON.stringify(loadTree, null, 2)}`);
+      debug('loadTree = %s', loadTree);
       const text = await that._load(contentsHash)
-      debug(`text=${text}`);
-
-
+      debug('text = %s', text);
 
     } catch (e) {
+      debug('save error %s', e);
       throw new Error(e);
 
     }
@@ -162,24 +160,17 @@ export default class TimedFile {
 
     const currentText = fs.readFileSync(fileFullPath).toString();
 
-
-    debug(`-----------------------`);
-    const headCommit1 = await that._loadCommit(commitHash);
-    debug(`headCommit1=${JSON.stringify(headCommit1, null, 2)}`);
-    const loadTree1 = await that._loadTree(headCommit1);
-    debug(`loadTree1=${JSON.stringify(loadTree1, null, 2)}`);
-    const loadText = await that._load(loadTree1[0].hash)
-    debug(`loadText=${loadText}`);
-    var diffs = [];
-    jsdiff.diffChars(loadText, currentText).forEach(function (part) {
-      // green for additions, red for deletions 
-      // grey for common parts 
-      var color = part.added ? 'green' :
-        part.removed ? 'red' : 'grey';
-      diffs.push(part.value[color]);
-    });
-    console.log(diffs.join(''));
-    
+    if (commitHash !== null) {      
+      const headCommitDiff = await that._loadCommit(commitHash);
+      debug('headCommitDiff= %s', headCommitDiff);
+      const loadTreeDiff = await that._loadTree(headCommitDiff);
+      debug('loadTreeDiff = %s', loadTreeDiff);
+      const loadText = await that._load(loadTreeDiff[0].hash)
+      debug('loadText =%s', loadText);      
+      return jsdiff.diffChars(loadText, currentText)
+    } else {
+      return jsdiff.diffChars('', currentText)
+    }
   }
 
   rollForward = () => { }

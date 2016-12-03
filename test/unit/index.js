@@ -26,22 +26,25 @@ describe('TimedFile', () => {
   });
 
   describe('Able to Save', () => {
-
-    
-    it('class created', () => {
-
+    it('class created', async () => {
       const author = { name: 'Raymond Ho', email: 'chunkiat82@gmail.com' };
       const timedFile = new TimedFile({ fileFullPath });
       fs.writeFileSync(fileFullPath, 'Line 1\n');
       try {
-        timedFile.save(author).then(() => {
-          fs.appendFileSync(fileFullPath, 'Line 2\n');
-          timedFile.diff();
-          timedFile.save(author).then(() => {
-            fs.appendFileSync(fileFullPath, 'Line 3\n');
-            timedFile.diff();
-          });
-        });
+        await timedFile.save(author);
+        const jsDiffs = await timedFile.diff();
+        expect(jsDiffs).to.eql([{ value: 'Line 1\n', count: 7 }]);
+        
+        // const diffs = [];
+        // jsDiffs.forEach(function (part) {
+        //   // green for additions, red for deletions 
+        //   // grey for common parts 
+        //   var color = part.added ? 'green' :
+        //     part.removed ? 'red' : 'grey';
+        //   diffs.push(part.value[color]);
+        // });
+        // console.log()
+
       } catch (e) {
         console.log(e);
       }
@@ -50,7 +53,7 @@ describe('TimedFile', () => {
   });
 
   after('Tear Down', () => {
-    setTimeout(()=>{fs.removeSync(gitTestFolder)}, 200);
+    setTimeout(() => { fs.removeSync(gitTestFolder) }, 200);
   });
 
 });
