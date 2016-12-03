@@ -10,12 +10,14 @@ const FIXED_MESSAGE = 'Raymond Ho @ 2016';
 export default class TimedFile {
   constructor(options) {
 
-    const {fileFullPath, author } = options;
+    const {fileFullPath, author, versionsPath } = options;
 
     this.fileFullPath = fileFullPath;
     this.directory = dirname(this.fileFullPath);
     this.filename = basename(this.fileFullPath);
-    this.repo = git.repo(this.directory);
+    this.repoPath = versionsPath || this.directory;
+    this.headCommitFile = [this.repoPath, `${this.filename}.commit`].join('/');
+    this.repo = git.repo(this.repoPath);
     this.tree = {};
     this.commitHash = null;
   }
@@ -32,8 +34,6 @@ export default class TimedFile {
     const { filename, repo, tree } = that;
 
     const { contents, author } = commit;
-
-    // const author = `${name} <${email}>`;
 
     const message = FIXED_MESSAGE;
 
@@ -56,7 +56,15 @@ export default class TimedFile {
 
     const that = this;
 
-    const { filename, tree, commitHash, repo } = that;
+    const { filename, tree, repo, repoPath, headCommitFile } = that;
+
+    let commitHash = null;
+
+    try {
+      commitHash = fs.readFileSync(headCommitFile).toString();
+    } catch (err) {
+      debug('file not found for %s', headCommitFile);
+    }
 
     const { contents, author } = commit;
 
@@ -77,7 +85,7 @@ export default class TimedFile {
 
         repo.saveAs("commit", treeCommit, function (err, commitHash) {
           if (err) return reject(err);
-          repo.updateHead(commitHash);
+          fs.writeFileSync(headCommitFile, commitHash);
           resolve(commitHash);
         });
       });
@@ -156,17 +164,25 @@ export default class TimedFile {
 
   diff = async () => {
     const that = this;
-    const { commitHash, fileFullPath } = that;
+    const { fileFullPath, headCommitFile } = that;
+
+    let commitHash = null;
+
+    try {
+      commitHash = fs.readFileSync(headCommitFile).toString();
+    } catch (err) {
+      debug('file not found for %s', headCommitFile);
+    } 
 
     const currentText = fs.readFileSync(fileFullPath).toString();
 
-    if (commitHash !== null) {      
+    if (commitHash !== null) {
       const headCommitDiff = await that._loadCommit(commitHash);
       debug('headCommitDiff= %s', headCommitDiff);
       const loadTreeDiff = await that._loadTree(headCommitDiff);
       debug('loadTreeDiff = %s', loadTreeDiff);
       const loadText = await that._load(loadTreeDiff[0].hash)
-      debug('loadText =%s', loadText);      
+      debug('loadText =%s', loadText);
       return jsdiff.diffChars(loadText, currentText)
     } else {
       return jsdiff.diffChars('', currentText)
