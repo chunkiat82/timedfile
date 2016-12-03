@@ -6,8 +6,14 @@ import {
 } from 'mocha-logger';
 const PATH_DELIMITER = '/';
 const gitTestFolder = [__dirname, '..', 'testcases', 'git'].join(PATH_DELIMITER);
+const fileFullPath = [gitTestFolder, 'saveTest.js'].join(PATH_DELIMITER);
 
 describe('TimedFile', () => {
+
+  before('before TimeFile', () => {
+    fs.createFileSync(fileFullPath);
+  });
+
   describe('Functionalities Present', () => {
     it('class created', () => {
       const timedFile = new TimedFile({ fileFullPath: `${__dirname}/LICENSE` });
@@ -21,7 +27,7 @@ describe('TimedFile', () => {
 
   describe('Able to Save', () => {
 
-    const fileFullPath = [gitTestFolder, 'saveTest.js'].join(PATH_DELIMITER);
+    
     it('class created', () => {
 
       const author = { name: 'Raymond Ho', email: 'chunkiat82@gmail.com' };
