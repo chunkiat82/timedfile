@@ -158,7 +158,7 @@ export default class TimedFile {
         const text1 = await that._load(loadTree1[0].hash)
         console.log(`text1=${text1}`);
         var diffs= [];
-        jsdiff.diffChars(text, text1).forEach(function (part) {
+        jsdiff.diffChars(text1, text).forEach(function (part) {
           // green for additions, red for deletions 
           // grey for common parts 
           var color = part.added ? 'green' :
