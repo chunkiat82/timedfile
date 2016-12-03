@@ -30,6 +30,7 @@ describe('TimedFile', () => {
       try {
         timedFile.save(author).then(() => {
           fs.appendFileSync(fileFullPath, 'Line 2\n');
+          timedFile.diff();
           timedFile.save(author).then(() => {
             fs.appendFileSync(fileFullPath, 'Line 3\n');
             timedFile.diff();
