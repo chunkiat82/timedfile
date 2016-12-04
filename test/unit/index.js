@@ -4,7 +4,7 @@ import TimedFile from '../../src/lib/index';
 import {
     log
 } from 'mocha-logger';
-const PATH_DELIMITER = '/';
+const PATH_DELIMITER = path.delimiter;
 const gitTestFolder = [__dirname, '..', 'testcases', 'git'].join(PATH_DELIMITER);
 const contentTestFolder = [__dirname, '..', 'testcases', 'content'].join(PATH_DELIMITER);
 const fileFullPath = [contentTestFolder, 'saveTest.js'].join(PATH_DELIMITER);
