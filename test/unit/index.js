@@ -1,34 +1,38 @@
 import fs from 'fs-promise';
 import path from 'path';
 import TimedFile from '../../src/lib/index';
-import {
-    log
-} from 'mocha-logger';
+// import {
+//     console.log
+// } from 'mocha-console.logger';
 const PATH_DELIMITER = '/';
 const gitTestFolder = [__dirname, '..', 'testcases', 'git'].join(PATH_DELIMITER);
 const contentTestFolder = [__dirname, '..', 'testcases', 'content'].join(PATH_DELIMITER);
 const fileFullPath = [contentTestFolder, 'saveTest.js'].join(PATH_DELIMITER);
 
-describe('TimedFile', () => {
+describe('TimedFile', function() {
 
-    before('Before TimeFile', () => {
-        fs.createFileSync(fileFullPath);
-        log(`fileFullPath created = ${fileFullPath}`);
+    before(async () => {
+        await fs.createFile(fileFullPath);
     });
 
-    describe('Functionalities Present', () => {
-        it('class created', () => {
+    // afterEach((done) => {
+    //     console.log(this.ctx.currentTest.title);
+    //     done();
+    // });
+
+    describe('Functionalities Present', function() {
+        it('Functionalities Present', function(done) {
             const timedFile = new TimedFile({ fileFullPath: `${__dirname}/LICENSE`, versionsPath: `${gitTestFolder}` });
             expect(timedFile).to.have.property('save');
             expect(timedFile).to.have.property('diff');
             expect(timedFile).to.have.property('fastforward');
             expect(timedFile).to.have.property('rollback');
+            done();
         });
-
     });
 
-    describe('Able to Save', () => {
-        it('class created', async () => {
+    describe('Able to Save', function() {
+        it('Able to Save', async function() {
             const author = { name: 'Raymond Ho', email: 'chunkiat82@gmail.com' };
             const timedFile = new TimedFile({ fileFullPath, versionsPath: `${gitTestFolder}` });
             await fs.writeFile(fileFullPath, 'Line 1\n');
@@ -42,8 +46,8 @@ describe('TimedFile', () => {
         });
     });
 
-    describe('Able to Diff When Loaded with Versions', () => {
-        it('class created', async () => {
+    describe('Able to Diff When Loaded with Versions', function() {
+        it('Able to Diff When Loaded with Versions', async function() {
             const author = { name: 'Raymond Ho', email: 'chunkiat82@gmail.com' };
             await fs.appendFile(fileFullPath, 'Line 2\n');
             const timedFile = new TimedFile({ fileFullPath, versionsPath: `${gitTestFolder}` });
@@ -57,8 +61,8 @@ describe('TimedFile', () => {
         });
     });
 
-    describe('Able to Save When Loaded with Versions', () => {
-        it('class created', async () => {
+    describe('Able to Save When Loaded with Versions', function() {
+        it('Able to Save When Loaded with Versions', async function() {
             const author = { name: 'Raymond Ho', email: 'chunkiat82@gmail.com' };
             const timedFile = new TimedFile({ fileFullPath, versionsPath: `${gitTestFolder}` });
             try {
@@ -74,26 +78,26 @@ describe('TimedFile', () => {
         });
     });
 
-    describe('Able to Preview a Rollback', () => {
-      it('class created', async () => {
-        const author = { name: 'Raymond Ho', email: 'chunkiat82@gmail.com' };
-        const timedFile = new TimedFile({ fileFullPath, versionsPath: `${gitTestFolder}` });
-        try {          
-          const first = await fs.readFile(fileFullPath);
-          console.log(first.toString());
-          const jsDiffs = await timedFile.diff();
-          await timedFile.rollback();
-          const second = await fs.readFile(fileFullPath);
-          console.log(second.toString());
-        } catch (e) {
-          console.log(e);
-        }
-      });
+    describe('Able to Preview a Rollback', function() {
+        it('Able to Preview a Rollback', async function() {
+            const author = { name: 'Raymond Ho', email: 'chunkiat82@gmail.com' };
+            const timedFile = new TimedFile({ fileFullPath, versionsPath: `${gitTestFolder}` });
+            try {
+                const first = await fs.readFile(fileFullPath);
+                // console.console.log(first.toString());
+                const jsDiffs = await timedFile.diff();
+                await timedFile.rollback();
+                const second = await fs.readFile(fileFullPath);
+                // console.console.log(second.toString());
+            } catch (e) {
+                console.log(e);
+            }
+        });
     });
-
-    after('Tear Down', () => {
-        setTimeout(() => { fs.removeSync(contentTestFolder) }, 200);
-        setTimeout(() => { fs.removeSync(gitTestFolder) }, 200)
+    
+    after('Tear Down', async () => {
+        await fs.remove(contentTestFolder);
+        await fs.remove(gitTestFolder);
     });
 
 });

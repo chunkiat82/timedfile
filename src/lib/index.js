@@ -181,7 +181,6 @@ export default class TimedFile {
     const currentText = readFile.toString();
 
     if (commitHash) {
-      console.log(commitHash);
       const headCommitDiff = await that._loadCommit(commitHash);
       debug('headCommitDiffTree= %s', headCommitDiff.tree);
       const loadTreeDiff = await that._loadTree(headCommitDiff.tree);

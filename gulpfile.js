@@ -84,9 +84,10 @@ function build() {
 function _mocha() {
   return gulp.src(['test/setup/node.js', 'test/unit/**/*.js'], {read: false})
     .pipe($.mocha({
-      reporter: 'dot',
+      // reporter: 'dot',
       globals: Object.keys(mochaGlobals.globals),
-      ignoreLeaks: false
+      ignoreLeaks: false,
+      asyncOnly: true
     }));
 }
 
