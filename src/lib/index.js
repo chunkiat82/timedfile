@@ -41,8 +41,7 @@ export default class TimedFile {
 
     return new Promise((resolve, reject) => {
       repo.saveAs("blob", contents, function (err, contentsHash) {
-        if (err)
-          return reject(err);
+        if (err) return reject(err);
         tree[filename] = {
           mode: 644,
           hash: contentsHash
@@ -56,7 +55,7 @@ export default class TimedFile {
 
     const that = this;
 
-    const { filename, tree, repo, repoPath, headCommitFile } = that;
+    const { filename, tree, repo, repoPath, headCommitFile, _saveCommitHead  } = that;
 
     let commitHash = null;
 
@@ -79,13 +78,11 @@ export default class TimedFile {
         if (err) return reject(err);
         debug('treeHash = %s', treeHash);
         const treeCommit = Object.assign({}, gitCommit, { tree: treeHash });
-        if (commitHash === null) delete commit.parent;
-
-        // debug(`treeCommit=${JSON.stringify(treeCommit, null, 4)}`);
+        if (treeCommit === null) delete treeCommit.parent;
 
         repo.saveAs("commit", treeCommit, function (err, commitHash) {
           if (err) return reject(err);
-          fs.writeFileSync(headCommitFile, commitHash);
+          _saveCommitHead(commitHash);
           resolve(commitHash);
         });
       });
@@ -93,20 +90,15 @@ export default class TimedFile {
   }
 
   /* this loads the tree of files, not really needed for single file repo */
-  _loadTree = (commit) => {
+  _loadTree = (commitTreeHash) => {
     const that = this;
     const { repo } = that;
 
-    const commitTreeHash = commit.tree;
     return new Promise((resolve, reject) => {
       // debug(`repo=${repo}`);
       repo.loadAs('tree', commitTreeHash, (err, tree) => {
 
-        if (err) {
-          // debug(`err=${JSON.stringify(err, null, 2)}`);
-          return reject(err);
-        }
-        // debug(`tree=${JSON.stringify(tree, null, 2)}`);
+        if (err) return reject(err);
         resolve(tree);
       });
     });
@@ -134,6 +126,17 @@ export default class TimedFile {
     });
   }
 
+  _saveCommitHead = (commitHash) => {
+    const that = this;
+    const { headCommitFile } = that;
+    return new Promise((resolve, reject) => {
+      fs.writeFile(headCommitFile, commitHash, (err, data) => {
+        if (err) return reject(err);
+        return resolve();
+      });
+    });
+  };
+
   save = async (author) => {
     var that = this;
 
@@ -146,13 +149,13 @@ export default class TimedFile {
       const contentsHash = await that._saveBlob(commit);
       debug('contentsHash = %s', contentsHash);
       that.commitHash = await that._saveAsCommit(commit);
-      debug('that.commitHash = %s', that.commitHash);
-      const headCommit = await that._loadCommit(that.commitHash);
-      debug('headCommit = %s', headCommit);
-      const loadTree = await that._loadTree(headCommit);
-      debug('loadTree = %s', loadTree);
-      const text = await that._load(contentsHash)
-      debug('text = %s', text);
+      debug('that.commitHashTree = %s', that.commitHash.tree);
+      // const headCommit = await that._loadCommit(that.commitHash);
+      // debug('headCommitTree = %s', headCommit.tree);
+      // const loadTree = await that._loadTree(headCommit.tree);
+      // debug('loadTree = %s', loadTree);
+      // const text = await that._load(contentsHash)
+      // debug('text = %s', text);
 
     } catch (e) {
       debug('save error %s', e);
@@ -170,18 +173,19 @@ export default class TimedFile {
 
     try {
       commitHash = fs.readFileSync(headCommitFile).toString();
+      debug('commitHash = %s', commitHash || 'EMPTY');
     } catch (err) {
       debug('file not found for %s', headCommitFile);
-    } 
+    }
 
     const currentText = fs.readFileSync(fileFullPath).toString();
 
-    if (commitHash !== null) {
+    if (commitHash) {
       const headCommitDiff = await that._loadCommit(commitHash);
-      debug('headCommitDiff= %s', headCommitDiff);
-      const loadTreeDiff = await that._loadTree(headCommitDiff);
-      debug('loadTreeDiff = %s', loadTreeDiff);
-      const loadText = await that._load(loadTreeDiff[0].hash)
+      debug('headCommitDiffTree= %s', JSON.stringify(headCommitDiff.tree));
+      const loadTreeDiff = await that._loadTree(headCommitDiff.tree);
+      debug('loadTreeDiff[0].hash = %s', loadTreeDiff && loadTreeDiff[0].hash);
+      const loadText = await that._load(loadTreeDiff[0].hash);
       debug('loadText =%s', loadText);
       return jsdiff.diffChars(loadText, currentText)
     } else {

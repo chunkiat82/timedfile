@@ -1,4 +1,5 @@
 **/git/objects/
+test/testcases/git/**
 .DS_Store
 # Logs
 logs
