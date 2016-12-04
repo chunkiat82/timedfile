@@ -44,7 +44,6 @@ describe('TimedFile', function() {
             await fs.appendFile(fileFullPath, 'Line 2\n');
             const timedFile = new TimedFile({ fileFullPath, versionsPath: `${gitTestFolder}` });            
             const jsDiffs = await timedFile.diff();
-            log(JSON.stringify(jsDiffs));
             expect(jsDiffs).to.eql([{ count: 7, value: 'Line 1\n' },
             { count: 7, added: true, removed: undefined, value: 'Line 2\n' }]);
             
@@ -65,7 +64,7 @@ describe('TimedFile', function() {
         });
     });
 
-    describe('Able to Rollback', function() {
+    describe('Rollback', function() {
         it('Able to Rollback', async function() {
             const author = { name: 'Raymond Ho', email: 'chunkiat82@gmail.com' };
             const timedFile = new TimedFile({ fileFullPath, versionsPath: `${gitTestFolder}` });
@@ -75,11 +74,12 @@ describe('TimedFile', function() {
             await timedFile.rollback();
             const afterRollback = await fs.readFile(fileFullPath);
             expect(afterRollback.toString()).to.equal('Line 1\n');
+            expect(timedFile.rolls.length).to.equal(1);
         });
     });
 
-    describe('Able to FastForward', function() {
-        it('Able to Rollback', async function() {
+    describe('FastForward', function() {
+        it('Able to FastForward', async function() {
             const author = { name: 'Raymond Ho', email: 'chunkiat82@gmail.com' };
             const timedFile = new TimedFile({ fileFullPath, versionsPath: `${gitTestFolder}` });
         });

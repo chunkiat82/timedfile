@@ -76,7 +76,7 @@ export default class TimedFile {
     debug('_saveAsCommit - commitHash = %s', commitHash);
 
     const gitCommit = { author, parent: commitHash, committer: author, filename, contents, message };
-    debug('_saveAsCommit - gitCommit = %s', JSON.stringify(gitCommit));
+
     return new Promise((resolve, reject) => {
       //get a new parent
 
@@ -85,8 +85,6 @@ export default class TimedFile {
         debug('treeHash = %s', treeHash);
         const treeCommit = Object.assign({}, gitCommit, { tree: treeHash });
         if (commitHash === null) delete treeCommit.parent;
-
-        debug('_saveAsCommit - treeCommit = %s', JSON.stringify(treeCommit));
 
         repo.saveAs("commit", treeCommit, async (err, commitHash) => {
           if (err) return reject(err);
@@ -219,17 +217,18 @@ export default class TimedFile {
     // const commitHash = await that._loadCommitHead();
 
     if (commitHash) {
-      let headCommitDiff = await that._loadCommit(commitHash);
+      let commit = await that._loadCommit(commitHash);
 
-      if (headCommitDiff.parents.length === 1) {
-        const parentCommitHash = headCommitDiff.parents[0];
-        headCommitDiff = await that._loadCommit(parentCommitHash);
+      if (commit.parents.length === 1) {
+        const parentCommitHash = commit.parents[0];
+        that.commitHash = parentCommitHash;
+        this.rolls.push(commit);
+        commit = await that._loadCommit(parentCommitHash);
       } else {
-        debug('rollback - headCommitDiff does not any parent that is single, it has [%s] parents', headCommitDiff.parents.length);
+        debug('rollback - headCommitDiff does not any parent that is single, it has [%s] parents', commit.parents.length);
       }
 
-      debug('rollback - headCommitDiffTree = %s', JSON.stringify(headCommitDiff.tree));
-      const loadTreeDiff = await that._loadTree(headCommitDiff.tree);
+      const loadTreeDiff = await that._loadTree(commit.tree);
       debug('rollback - loadTreeDiff[0].hash = %s', loadTreeDiff && loadTreeDiff[0].hash);
       const loadText = await that._load(loadTreeDiff[0].hash);
       await fs.writeFile(fileFullPath, loadText);
