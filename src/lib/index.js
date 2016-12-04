@@ -178,7 +178,7 @@ export default class TimedFile {
       // debug('text = %s', text);
 
     } catch (e) {
-      debug('save error %s', e);
+      debug('save - error %s', e);
       throw new Error(e);
 
     }
@@ -195,11 +195,11 @@ export default class TimedFile {
 
     if (commitHash) {
       const headCommitDiff = await that._loadCommit(commitHash);
-      debug('headCommitDiffTree= %s', headCommitDiff.tree);
+      debug('diff - headCommitDiffTree = %s', headCommitDiff.tree);
       const loadTreeDiff = await that._loadTree(headCommitDiff.tree);
-      debug('loadTreeDiff[0].hash = %s', loadTreeDiff && loadTreeDiff[0].hash);
+      debug('diff - loadTreeDiff[0].hash = %s', loadTreeDiff && loadTreeDiff[0].hash);
       const loadText = await that._load(loadTreeDiff[0].hash);
-      debug('loadText =%s', loadText);
+      debug('diff - loadText = %s', loadText);
       return jsdiff.diffChars(loadText, currentText)
     } else {
       return jsdiff.diffChars('', currentText)
@@ -225,12 +225,12 @@ export default class TimedFile {
         const parentCommitHash = headCommitDiff.parents[0];
         headCommitDiff = await that._loadCommit(parentCommitHash);
       } else {
-        debug('headCommitDiff does not any parent that is single, it has [%s] parents', headCommitDiff.parents.length);
+        debug('rollback - headCommitDiff does not any parent that is single, it has [%s] parents', headCommitDiff.parents.length);
       }
 
-      debug('headCommitDiffTree= %s', JSON.stringify(headCommitDiff.tree));
+      debug('rollback - headCommitDiffTree = %s', JSON.stringify(headCommitDiff.tree));
       const loadTreeDiff = await that._loadTree(headCommitDiff.tree);
-      debug('loadTreeDiff[0].hash = %s', loadTreeDiff && loadTreeDiff[0].hash);
+      debug('rollback - loadTreeDiff[0].hash = %s', loadTreeDiff && loadTreeDiff[0].hash);
       const loadText = await that._load(loadTreeDiff[0].hash);
       await fs.writeFile(fileFullPath, loadText);
     } else {
