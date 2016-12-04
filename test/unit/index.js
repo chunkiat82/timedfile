@@ -27,7 +27,7 @@ describe('TimedFile', function() {
         });
     });
 
-    describe('Able to Save', function() {
+    describe('Save', function() {
         it('Able to Save', async function() {
             const author = { name: 'Raymond Ho', email: 'chunkiat82@gmail.com' };
             const timedFile = new TimedFile({ fileFullPath, versionsPath: `${gitTestFolder}` });
@@ -38,20 +38,20 @@ describe('TimedFile', function() {
         });
     });
 
-    describe('Able to Diff When Loaded with Versions', function() {
+    describe('Diff', function() {
         it('Able to Diff When Loaded with Versions', async function() {
             const author = { name: 'Raymond Ho', email: 'chunkiat82@gmail.com' };
             await fs.appendFile(fileFullPath, 'Line 2\n');
-            const timedFile = new TimedFile({ fileFullPath, versionsPath: `${gitTestFolder}` });
-            
+            const timedFile = new TimedFile({ fileFullPath, versionsPath: `${gitTestFolder}` });            
             const jsDiffs = await timedFile.diff();
+            log(JSON.stringify(jsDiffs));
             expect(jsDiffs).to.eql([{ count: 7, value: 'Line 1\n' },
             { count: 7, added: true, removed: undefined, value: 'Line 2\n' }]);
             
         });
     });
 
-    describe('Able to Save When Loaded with Versions', function() {
+    describe('Save', function() {
         it('Able to Save When Loaded with Versions', async function() {
             const author = { name: 'Raymond Ho', email: 'chunkiat82@gmail.com' };
             const timedFile = new TimedFile({ fileFullPath, versionsPath: `${gitTestFolder}` });

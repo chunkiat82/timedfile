@@ -22,10 +22,12 @@ export default class TimedFile {
     this.repo = git.repo(this.repoPath);
     this.tree = {};
     try {
-      this.commitHash = fs.readFileSync(headCommitFile);
-    } catch (e){
+      this.commitHash = fs.readFileSync(this.headCommitFile).toString();
+    } catch (e) {
       this.commitHash = null;
     }
+
+    debug('constructor - this.commitHash = %s', this.commitHash);
 
     this.rolls = [];
   }
@@ -63,16 +65,18 @@ export default class TimedFile {
 
     const that = this;
 
-    const { filename, tree, repo, repoPath  } = that;
+    const { filename, tree, repo, repoPath, commitHash  } = that;
 
-    const commitHash = await that._loadCommitHead();
+    // const commitHash = await that._loadCommitHead();
 
     const { contents, author } = commit;
 
     const message = FIXED_MESSAGE;
 
-    const gitCommit = { author, parent: commitHash, committer: author, filename, contents, message };
+    debug('_saveAsCommit - commitHash = %s', commitHash);
 
+    const gitCommit = { author, parent: commitHash, committer: author, filename, contents, message };
+    debug('_saveAsCommit - gitCommit = %s', JSON.stringify(gitCommit));
     return new Promise((resolve, reject) => {
       //get a new parent
 
@@ -80,7 +84,9 @@ export default class TimedFile {
         if (err) return reject(err);
         debug('treeHash = %s', treeHash);
         const treeCommit = Object.assign({}, gitCommit, { tree: treeHash });
-        if (treeCommit === null) delete treeCommit.parent;
+        if (commitHash === null) delete treeCommit.parent;
+
+        debug('_saveAsCommit - treeCommit = %s', JSON.stringify(treeCommit));
 
         repo.saveAs("commit", treeCommit, async (err, commitHash) => {
           if (err) return reject(err);
@@ -134,21 +140,21 @@ export default class TimedFile {
     return await fs.writeFile(headCommitFile, commitHash);
   };
 
-  _loadCommitHead = async () => {
-    const that = this;
-    const { headCommitFile } = that;
-    let commitHash = null;
+  // _loadCommitHead = async () => {
+  //   const that = this;
+  //   const { headCommitFile } = that;
+  //   let commitHash = null;
 
-    try {
-      const readFile = await fs.readFileSync(headCommitFile);
-      commitHash = readFile.toString();
-      debug('commitHash = %s', commitHash || 'EMPTY');
-    } catch (err) {
-      debug('file not found for %s', headCommitFile);
-    }
+  //   try {
+  //     const readFile = await fs.readFileSync(headCommitFile);
+  //     commitHash = readFile.toString();
+  //     debug('commitHash = %s', commitHash || 'EMPTY');
+  //   } catch (err) {
+  //     debug('file not found for %s', headCommitFile);
+  //   }
 
-    return commitHash;
-  }
+  //   return commitHash;
+  // }
 
   save = async (author) => {
     var that = this;
@@ -161,9 +167,9 @@ export default class TimedFile {
       const commit = { author, contents };
 
       const contentsHash = await that._saveBlob(commit);
-      debug('contentsHash = %s', contentsHash);
+      debug('save - contentsHash = %s', contentsHash);
       that.commitHash = await that._saveAsCommit(commit);
-      debug('that.commitHashTree = %s', that.commitHash.tree);
+      debug('save - that.commitHash = %s', that.commitHash);
       // const headCommit = await that._loadCommit(that.commitHash);
       // debug('headCommitTree = %s', headCommit.tree);
       // const loadTree = await that._loadTree(headCommit.tree);
@@ -181,8 +187,8 @@ export default class TimedFile {
 
   diff = async () => {
     const that = this;
-    const { fileFullPath } = that;
-    const commitHash = await that._loadCommitHead();
+    const { fileFullPath, commitHash } = that;
+    // const commitHash = await that._loadCommitHead();
 
     const readFile = await fs.readFile(fileFullPath);
     const currentText = readFile.toString();
@@ -208,15 +214,14 @@ export default class TimedFile {
     //check if file here TBD
 
     const that = this;
-    const { fileFullPath, headCommitFile } = that;
+    const { fileFullPath, headCommitFile, commitHash } = that;
 
-    const commitHash = await that._loadCommitHead();
+    // const commitHash = await that._loadCommitHead();
 
     if (commitHash) {
       let headCommitDiff = await that._loadCommit(commitHash);
 
       if (headCommitDiff.parents.length === 1) {
-
         const parentCommitHash = headCommitDiff.parents[0];
         headCommitDiff = await that._loadCommit(parentCommitHash);
       } else {
