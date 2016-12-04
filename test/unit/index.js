@@ -1,9 +1,9 @@
 import fs from 'fs-promise';
 import path from 'path';
 import TimedFile from '../../src/lib/index';
-// import {
-//     console.log
-// } from 'mocha-console.logger';
+import {
+    log
+} from 'mocha-logger';
 const PATH_DELIMITER = '/';
 const gitTestFolder = [__dirname, '..', 'testcases', 'git'].join(PATH_DELIMITER);
 const contentTestFolder = [__dirname, '..', 'testcases', 'content'].join(PATH_DELIMITER);
@@ -14,11 +14,6 @@ describe('TimedFile', function() {
     before(async () => {
         await fs.createFile(fileFullPath);
     });
-
-    // afterEach((done) => {
-    //     console.log(this.ctx.currentTest.title);
-    //     done();
-    // });
 
     describe('Functionalities Present', function() {
         it('Functionalities Present', function(done) {
@@ -41,7 +36,7 @@ describe('TimedFile', function() {
                 const jsDiffs = await timedFile.diff();
                 expect(jsDiffs).to.eql([{ value: 'Line 1\n', count: 7 }]);
             } catch (e) {
-                console.log(e);
+                log(e);
             }
         });
     });
@@ -56,7 +51,7 @@ describe('TimedFile', function() {
                 expect(jsDiffs).to.eql([{ count: 7, value: 'Line 1\n' },
                 { count: 7, added: true, removed: undefined, value: 'Line 2\n' }]);
             } catch (e) {
-                console.log(e);
+                log(e);
             }
         });
     });
@@ -73,7 +68,7 @@ describe('TimedFile', function() {
                     value: 'Line 1\nLine 2\n'
                 }]);
             } catch (e) {
-                console.log(e);
+                log(e);
             }
         });
     });
@@ -83,14 +78,14 @@ describe('TimedFile', function() {
             const author = { name: 'Raymond Ho', email: 'chunkiat82@gmail.com' };
             const timedFile = new TimedFile({ fileFullPath, versionsPath: `${gitTestFolder}` });
             try {
-                const first = await fs.readFile(fileFullPath);
-                // console.console.log(first.toString());
+                const beforeRollback = await fs.readFile(fileFullPath);
+                expect(beforeRollback.toString()).to.equal('Line 1\nLine 2\n');
                 const jsDiffs = await timedFile.diff();
                 await timedFile.rollback();
-                const second = await fs.readFile(fileFullPath);
-                // console.console.log(second.toString());
+                const afterRollback = await fs.readFile(fileFullPath);
+                expect(afterRollback.toString()).to.equal('Line 1\n');
             } catch (e) {
-                console.log(e);
+                log(e);
             }
         });
     });
