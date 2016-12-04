@@ -32,14 +32,9 @@ describe('TimedFile', function() {
             const author = { name: 'Raymond Ho', email: 'chunkiat82@gmail.com' };
             const timedFile = new TimedFile({ fileFullPath, versionsPath: `${gitTestFolder}` });
             await fs.writeFile(fileFullPath, 'Line 1\n');
-            try {
-                await timedFile.save(author);
-                const jsDiffs = await timedFile.diff();
-                expect(jsDiffs).to.eql([{ value: 'Line 1\n', count: 7 }]);
-            } catch (e) {
-                log(e)
-                assert.fail(0, 1, 'Exception thrown', e);
-            }
+            await timedFile.save(author);
+            const jsDiffs = await timedFile.diff();
+            expect(jsDiffs).to.eql([{ value: 'Line 1\n', count: 7 }]);
         });
     });
 
@@ -48,14 +43,11 @@ describe('TimedFile', function() {
             const author = { name: 'Raymond Ho', email: 'chunkiat82@gmail.com' };
             await fs.appendFile(fileFullPath, 'Line 2\n');
             const timedFile = new TimedFile({ fileFullPath, versionsPath: `${gitTestFolder}` });
-            try {
-                const jsDiffs = await timedFile.diff();
-                expect(jsDiffs).to.eql([{ count: 7, value: 'Line 1\n' },
-                { count: 7, added: true, removed: undefined, value: 'Line 2\n' }]);
-            } catch (e) {
-                log(e);
-                assert.fail(0, 1, 'Exception thrown', e);
-            }
+            
+            const jsDiffs = await timedFile.diff();
+            expect(jsDiffs).to.eql([{ count: 7, value: 'Line 1\n' },
+            { count: 7, added: true, removed: undefined, value: 'Line 2\n' }]);
+            
         });
     });
 
@@ -63,17 +55,13 @@ describe('TimedFile', function() {
         it('Able to Save When Loaded with Versions', async function() {
             const author = { name: 'Raymond Ho', email: 'chunkiat82@gmail.com' };
             const timedFile = new TimedFile({ fileFullPath, versionsPath: `${gitTestFolder}` });
-            try {
-                await timedFile.save(author);
-                const jsDiffs = await timedFile.diff();
-                expect(jsDiffs).to.eql([{
-                    count: 14,
-                    value: 'Line 1\nLine 2\n'
-                }]);
-            } catch (e) {
-                log(e);
-                assert.fail(0, 1, 'Exception thrown', e);
-            }
+            await timedFile.save(author);
+            const jsDiffs = await timedFile.diff();
+            expect(jsDiffs).to.eql([{
+                count: 14,
+                value: 'Line 1\nLine 2\n'
+            }]);
+        
         });
     });
 
@@ -81,17 +69,12 @@ describe('TimedFile', function() {
         it('Able to Rollback', async function() {
             const author = { name: 'Raymond Ho', email: 'chunkiat82@gmail.com' };
             const timedFile = new TimedFile({ fileFullPath, versionsPath: `${gitTestFolder}` });
-            try {
-                const beforeRollback = await fs.readFile(fileFullPath);
-                expect(beforeRollback.toString()).to.equal('Line 1\nLine 2\n');
-                const jsDiffs = await timedFile.diff();
-                await timedFile.rollback();
-                const afterRollback = await fs.readFile(fileFullPath);
-                expect(afterRollback.toString()).to.equal('Line 1\n');
-            } catch (e) {                
-                log(e);
-                assert.fail(0, 1, 'Exception thrown', e);
-            }
+            const beforeRollback = await fs.readFile(fileFullPath);
+            expect(beforeRollback.toString()).to.equal('Line 1\nLine 2\n');
+            const jsDiffs = await timedFile.diff();
+            await timedFile.rollback();
+            const afterRollback = await fs.readFile(fileFullPath);
+            expect(afterRollback.toString()).to.equal('Line 1\n');
         });
     });
 
@@ -99,12 +82,6 @@ describe('TimedFile', function() {
         it('Able to Rollback', async function() {
             const author = { name: 'Raymond Ho', email: 'chunkiat82@gmail.com' };
             const timedFile = new TimedFile({ fileFullPath, versionsPath: `${gitTestFolder}` });
-            try {
-                
-            } catch (e) {
-                log(e);
-                assert.fail(0, 1, 'Exception thrown', e);
-            }
         });
     });
     

@@ -21,13 +21,11 @@ export default class TimedFile {
     this.headCommitFile = [this.repoPath, `${this.filename}.commit`].join(PATH_DELIMITER);
     this.repo = git.repo(this.repoPath);
     this.tree = {};
-    // try {
-    //   this.commitHash = fs.readFileSync(headCommitFile);
-    // } catch (e){
-    //   this.commitHash = null;
-    // }
-
-    this.commitHash = null;
+    try {
+      this.commitHash = fs.readFileSync(headCommitFile);
+    } catch (e){
+      this.commitHash = null;
+    }
 
     this.rolls = [];
   }
