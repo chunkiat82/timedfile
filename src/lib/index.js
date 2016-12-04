@@ -1,10 +1,12 @@
-import { basename, dirname } from 'path';
+import path from 'path';
+const { basename, dirname } = path;
 import git from 'git-node';
 import fs from 'fs-promise';
 require('colors');
 var jsdiff = require('diff');
 var debug = require('debug')('timedfile');
 
+const PATH_DELIMITER = '/';//path.delimiter;
 const FIXED_MESSAGE = 'Raymond Ho @ 2016';
 
 export default class TimedFile {
@@ -16,10 +18,18 @@ export default class TimedFile {
     this.directory = dirname(this.fileFullPath);
     this.filename = basename(this.fileFullPath);
     this.repoPath = versionsPath || this.directory;
-    this.headCommitFile = [this.repoPath, `${this.filename}.commit`].join('/');
+    this.headCommitFile = [this.repoPath, `${this.filename}.commit`].join(PATH_DELIMITER);
     this.repo = git.repo(this.repoPath);
     this.tree = {};
+    // try {
+    //   this.commitHash = fs.readFileSync(headCommitFile);
+    // } catch (e){
+    //   this.commitHash = null;
+    // }
+
     this.commitHash = null;
+
+    this.rolls = [];
   }
 
   /* sample commit
@@ -132,8 +142,8 @@ export default class TimedFile {
     let commitHash = null;
 
     try {
-      const readFile = await fs.readFile(headCommitFile);
-      commitHash = readFile.toString();      
+      const readFile = await fs.readFileSync(headCommitFile);
+      commitHash = readFile.toString();
       debug('commitHash = %s', commitHash || 'EMPTY');
     } catch (err) {
       debug('file not found for %s', headCommitFile);
@@ -147,9 +157,9 @@ export default class TimedFile {
 
     const { fileFullPath } = that;
 
-    try {      
+    try {
       const readFile = await fs.readFile(fileFullPath);
-      const contents = readFile.toString(); 
+      const contents = readFile.toString();
       const commit = { author, contents };
 
       const contentsHash = await that._saveBlob(commit);
@@ -174,8 +184,7 @@ export default class TimedFile {
   diff = async () => {
     const that = this;
     const { fileFullPath } = that;
-
-    const commitHash = await that._loadCommitHead();    
+    const commitHash = await that._loadCommitHead();
 
     const readFile = await fs.readFile(fileFullPath);
     const currentText = readFile.toString();
@@ -209,11 +218,13 @@ export default class TimedFile {
       let headCommitDiff = await that._loadCommit(commitHash);
 
       if (headCommitDiff.parents.length === 1) {
+
         const parentCommitHash = headCommitDiff.parents[0];
         headCommitDiff = await that._loadCommit(parentCommitHash);
       } else {
         debug('headCommitDiff does not any parent that is single, it has [%s] parents', headCommitDiff.parents.length);
       }
+
       debug('headCommitDiffTree= %s', JSON.stringify(headCommitDiff.tree));
       const loadTreeDiff = await that._loadTree(headCommitDiff.tree);
       debug('loadTreeDiff[0].hash = %s', loadTreeDiff && loadTreeDiff[0].hash);
@@ -222,6 +233,10 @@ export default class TimedFile {
     } else {
       debug('Not existing commit found for rollback');
     }
+
+  }
+
+  reset = async () => {
 
   }
 

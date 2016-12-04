@@ -1,10 +1,11 @@
 import fs from 'fs-promise';
 import path from 'path';
+import { assert } from 'chai';
 import TimedFile from '../../src/lib/index';
 import {
     log
 } from 'mocha-logger';
-const PATH_DELIMITER = path.delimiter;
+const PATH_DELIMITER = '/';//path.delimiter;
 const gitTestFolder = [__dirname, '..', 'testcases', 'git'].join(PATH_DELIMITER);
 const contentTestFolder = [__dirname, '..', 'testcases', 'content'].join(PATH_DELIMITER);
 const fileFullPath = [contentTestFolder, 'saveTest.js'].join(PATH_DELIMITER);
@@ -36,7 +37,8 @@ describe('TimedFile', function() {
                 const jsDiffs = await timedFile.diff();
                 expect(jsDiffs).to.eql([{ value: 'Line 1\n', count: 7 }]);
             } catch (e) {
-                log(e);
+                log(e)
+                assert.fail(0, 1, 'Exception thrown', e);
             }
         });
     });
@@ -52,6 +54,7 @@ describe('TimedFile', function() {
                 { count: 7, added: true, removed: undefined, value: 'Line 2\n' }]);
             } catch (e) {
                 log(e);
+                assert.fail(0, 1, 'Exception thrown', e);
             }
         });
     });
@@ -69,12 +72,13 @@ describe('TimedFile', function() {
                 }]);
             } catch (e) {
                 log(e);
+                assert.fail(0, 1, 'Exception thrown', e);
             }
         });
     });
 
-    describe('Able to Preview a Rollback', function() {
-        it('Able to Preview a Rollback', async function() {
+    describe('Able to Rollback', function() {
+        it('Able to Rollback', async function() {
             const author = { name: 'Raymond Ho', email: 'chunkiat82@gmail.com' };
             const timedFile = new TimedFile({ fileFullPath, versionsPath: `${gitTestFolder}` });
             try {
@@ -84,8 +88,22 @@ describe('TimedFile', function() {
                 await timedFile.rollback();
                 const afterRollback = await fs.readFile(fileFullPath);
                 expect(afterRollback.toString()).to.equal('Line 1\n');
+            } catch (e) {                
+                log(e);
+                assert.fail(0, 1, 'Exception thrown', e);
+            }
+        });
+    });
+
+    describe('Able to FastForward', function() {
+        it('Able to Rollback', async function() {
+            const author = { name: 'Raymond Ho', email: 'chunkiat82@gmail.com' };
+            const timedFile = new TimedFile({ fileFullPath, versionsPath: `${gitTestFolder}` });
+            try {
+                
             } catch (e) {
                 log(e);
+                assert.fail(0, 1, 'Exception thrown', e);
             }
         });
     });
