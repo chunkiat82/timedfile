@@ -53,41 +53,13 @@ describe('TimedFile', function () {
         count: 7
       }]);
     });
-  });
 
-  describe('Diff', function () {
-    it('Able to Diff When Loaded with Versions', async function () {
+    it('Able to Save with Existing History', async function () {
       const author = {
         name: 'Raymond Ho',
         email: 'chunkiat82@gmail.com'
       };
       await fs.appendFile(fileFullPath, 'Line 2\n');
-      const timedFile = new TimedFile({
-        fileFullPath,
-        versionsPath: `${gitTestFolder}`
-      });
-
-      const jsDiffs = await timedFile.diff();
-
-      expect(jsDiffs).to.eql([{
-        count: 7,
-        value: 'Line 1\n'
-      }, {
-        count: 7,
-        added: true,
-        removed: undefined,
-        value: 'Line 2\n'
-      }]);
-
-    });
-  });
-
-  describe('Save', function () {
-    it('Able to Save When Loaded with Versions', async function () {
-      const author = {
-        name: 'Raymond Ho',
-        email: 'chunkiat82@gmail.com'
-      };
       const timedFile = new TimedFile({
         fileFullPath,
         versionsPath: `${gitTestFolder}`
@@ -103,6 +75,58 @@ describe('TimedFile', function () {
 
     });
   });
+
+  describe('Diff', function () {
+    it('Able to Diff After Initialization', async function () {
+      const author = {
+        name: 'Raymond Ho',
+        email: 'chunkiat82@gmail.com'
+      };
+      const timedFile = new TimedFile({
+        fileFullPath,
+        versionsPath: `${gitTestFolder}`
+      });
+      await fs.appendFile(fileFullPath, 'Line 3\n');
+
+      const jsDiffs = await timedFile.diff();
+      expect(jsDiffs).to.eql([{
+        "count": 14,
+        "value": "Line 1\nLine 2\n"
+      }, {
+        "count": 7,
+        "added": true,
+        "removed": undefined,
+        "value": "Line 3\n"
+      }]);
+      await timedFile.reset();
+    });
+
+    it('Able to Diff Before Initialization', async function () {
+      const author = {
+        name: 'Raymond Ho',
+        email: 'chunkiat82@gmail.com'
+      };
+       await fs.appendFile(fileFullPath, 'Line 3\n');
+      const timedFile = new TimedFile({
+        fileFullPath,
+        versionsPath: `${gitTestFolder}`
+      });
+      
+      const jsDiffs = await timedFile.diff();
+      expect(jsDiffs).to.eql([{
+        "count": 14,
+        "value": "Line 1\nLine 2\n"
+      }, {
+        "count": 7,
+        "added": true,
+        "removed": undefined,
+        "value": "Line 3\n"
+      }]);
+      await timedFile.reset();
+    });
+  });
+
+
 
   describe('Rollback', function () {
     it('Able to Rollback', async function () {
@@ -147,9 +171,7 @@ describe('TimedFile', function () {
       expect(afterFastForward.toString()).to.equal('Line 1\nLine 2\n');
       expect(timedFile.rolls.length).to.equal(0);
     });
-  });
 
-  describe('FastForward', function () {
     it('Able to FastForward', async function () {
       const author = {
         name: 'Raymond Ho',
@@ -198,7 +220,7 @@ describe('TimedFile', function () {
   });
 
   after('Tear Down', async() => {
-    await fs.remove(testFolder); 
+    await fs.remove(testFolder);
   });
 
 });
