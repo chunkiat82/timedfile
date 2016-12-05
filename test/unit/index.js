@@ -8,8 +8,9 @@ import {
   log
 } from 'mocha-logger';
 const PATH_DELIMITER = '/'; //path.delimiter;
-const gitTestFolder = [__dirname, '..', 'testcases', 'git'].join(PATH_DELIMITER);
-const contentTestFolder = [__dirname, '..', 'testcases', 'content'].join(PATH_DELIMITER);
+const testFolder = [__dirname, '..', 'testcases'].join(PATH_DELIMITER)
+const gitTestFolder = [testFolder, 'git'].join(PATH_DELIMITER);
+const contentTestFolder = [testFolder, 'content'].join(PATH_DELIMITER);
 const fileFullPath = [contentTestFolder, 'saveTest.js'].join(PATH_DELIMITER);
 
 describe('TimedFile', function () {
@@ -43,7 +44,9 @@ describe('TimedFile', function () {
         versionsPath: `${gitTestFolder}`
       });
       await fs.writeFile(fileFullPath, 'Line 1\n');
+
       await timedFile.save(author);
+
       const jsDiffs = await timedFile.diff();
       expect(jsDiffs).to.eql([{
         value: 'Line 1\n',
@@ -63,7 +66,9 @@ describe('TimedFile', function () {
         fileFullPath,
         versionsPath: `${gitTestFolder}`
       });
+
       const jsDiffs = await timedFile.diff();
+
       expect(jsDiffs).to.eql([{
         count: 7,
         value: 'Line 1\n'
@@ -87,7 +92,9 @@ describe('TimedFile', function () {
         fileFullPath,
         versionsPath: `${gitTestFolder}`
       });
+
       await timedFile.save(author);
+
       const jsDiffs = await timedFile.diff();
       expect(jsDiffs).to.eql([{
         count: 14,
@@ -110,7 +117,9 @@ describe('TimedFile', function () {
       const beforeRollback = await fs.readFile(fileFullPath);
       expect(beforeRollback.toString()).to.equal('Line 1\nLine 2\n');
       const jsDiffs = await timedFile.diff();
+
       await timedFile.rollback();
+
       const afterRollback = await fs.readFile(fileFullPath);
       expect(afterRollback.toString()).to.equal('Line 1\n');
       expect(timedFile.rolls.length).to.equal(1);
@@ -131,7 +140,9 @@ describe('TimedFile', function () {
       const beforeRollback = await fs.readFile(fileFullPath);
       expect(beforeRollback.toString()).to.equal('Line 1\nLine 2\n');
       expect(timedFile.rolls.length).to.equal(0);
+
       await timedFile.fastforward();
+
       const afterFastForward = await fs.readFile(fileFullPath);
       expect(afterFastForward.toString()).to.equal('Line 1\nLine 2\n');
       expect(timedFile.rolls.length).to.equal(0);
@@ -154,7 +165,9 @@ describe('TimedFile', function () {
       const afterRollback = await fs.readFile(fileFullPath);
       expect(afterRollback.toString()).to.equal('Line 1\n');
       expect(timedFile.rolls.length).to.equal(1);
+
       await timedFile.fastforward();
+
       const afterFastForward = await fs.readFile(fileFullPath);
       expect(afterFastForward.toString()).to.equal('Line 1\nLine 2\n');
       expect(timedFile.rolls.length).to.equal(0);
@@ -175,7 +188,9 @@ describe('TimedFile', function () {
       const beforeReset = await fs.readFile(fileFullPath);
       expect(beforeReset.toString()).to.equal('Line 1\nLine 2\nLine 3\n');
       expect(timedFile.rolls.length).to.equal(0);
+
       await timedFile.reset();
+
       const afterReset = await fs.readFile(fileFullPath);
       expect(afterReset.toString()).to.equal('Line 1\nLine 2\n');
       expect(timedFile.rolls.length).to.equal(0);
@@ -183,8 +198,7 @@ describe('TimedFile', function () {
   });
 
   after('Tear Down', async() => {
-    await fs.remove(contentTestFolder);
-    await fs.remove(gitTestFolder);
+    await fs.remove(testFolder); 
   });
 
 });
