@@ -1,6 +1,6 @@
 {
   "name": "timedfile",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "description": "Timed File - versioning with files",
   "main": "dist/index.min.js",
   "scripts": {
