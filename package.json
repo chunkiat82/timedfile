@@ -2,7 +2,7 @@
   "name": "timedfile",
   "version": "0.0.1",
   "description": "Timed File - versioning with files",
-  "main": "dist/index.js",
+  "main": "dist/index.min.js",
   "scripts": {
     "start": "babel-node src/index.js",
     "test": "gulp",
@@ -10,7 +10,8 @@
     "test-browser": "gulp test-browser",
     "watch": "gulp watch",
     "build": "gulp build",
-    "coverage": "gulp coverage"
+    "coverage": "gulp coverage",
+    "prepublish": "npm run build"
   },
   "repository": {
     "type": "git",

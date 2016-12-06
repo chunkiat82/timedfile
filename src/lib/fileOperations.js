@@ -1,3 +1,5 @@
+/* this file can be better with generator functions */
+
 import fs from 'fs-extra';
 
 export function writeFilePromise(fileFullPath, loadText) {

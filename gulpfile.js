@@ -74,12 +74,12 @@ function build() {
       devtool: 'source-map'
     }))
     .pipe(gulp.dest(destinationFolder))
-    // .pipe($.filter(['**', '!**/*.js.map']))
-    // .pipe($.rename(`${exportFileName}.min.js`))
-    // .pipe($.sourcemaps.init({loadMaps: true}))
-    // .pipe($.uglify())
-    // .pipe($.sourcemaps.write('./'))
-    // .pipe(gulp.dest(destinationFolder));
+    .pipe($.filter(['**', '!**/*.js.map']))
+    .pipe($.rename(`${exportFileName}.min.js`))
+    .pipe($.sourcemaps.init({loadMaps: true}))
+    .pipe($.uglify())
+    .pipe($.sourcemaps.write('./'))
+    .pipe(gulp.dest(destinationFolder));
 }
 
 function _mocha() {
