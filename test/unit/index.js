@@ -16,6 +16,10 @@ const testFolder = [__dirname, '..', 'testcases'].join(PATH_DELIMITER)
 const gitTestFolder = [testFolder, 'git'].join(PATH_DELIMITER);
 const contentTestFolder = [testFolder, 'content'].join(PATH_DELIMITER);
 const fileFullPath = [contentTestFolder, 'saveTest.js'].join(PATH_DELIMITER);
+const author = {
+  name: 'Raymond Ho',
+  email: 'chunkiat82@gmail.com'
+};
 
 describe('TimedFile', function () {
 
@@ -39,10 +43,6 @@ describe('TimedFile', function () {
 
   describe('Save', function () {
     it('Able to Save', async function () {
-      const author = {
-        name: 'Raymond Ho',
-        email: 'chunkiat82@gmail.com'
-      };
       const timedFile = new TimedFile({
         fileFullPath,
         versionsPath: `${gitTestFolder}`
@@ -59,10 +59,6 @@ describe('TimedFile', function () {
     });
 
     it('Able to Save with Existing History', async function () {
-      const author = {
-        name: 'Raymond Ho',
-        email: 'chunkiat82@gmail.com'
-      };
       await appendFilePromise(fileFullPath, 'Line 2\n');
       const timedFile = new TimedFile({
         fileFullPath,
@@ -82,10 +78,6 @@ describe('TimedFile', function () {
 
   describe('Diff', function () {
     it('Able to Diff After Initialization', async function () {
-      const author = {
-        name: 'Raymond Ho',
-        email: 'chunkiat82@gmail.com'
-      };
       const timedFile = new TimedFile({
         fileFullPath,
         versionsPath: `${gitTestFolder}`
@@ -107,10 +99,6 @@ describe('TimedFile', function () {
     });
 
     it('Able to Diff Before Initialization', async function () {
-      const author = {
-        name: 'Raymond Ho',
-        email: 'chunkiat82@gmail.com'
-      };
       await appendFilePromise(fileFullPath, 'Line 3\n');
       const timedFile = new TimedFile({
         fileFullPath,
@@ -135,10 +123,6 @@ describe('TimedFile', function () {
 
   describe('Rollback', function () {
     it('Able to Rollback', async function () {
-      const author = {
-        name: 'Raymond Ho',
-        email: 'chunkiat82@gmail.com'
-      };
       const timedFile = new TimedFile({
         fileFullPath,
         versionsPath: `${gitTestFolder}`
@@ -158,36 +142,28 @@ describe('TimedFile', function () {
 
   describe('FastForward', function () {
     it('Nothing to Fast Forward', async function () {
-      const author = {
-        name: 'Raymond Ho',
-        email: 'chunkiat82@gmail.com'
-      };
       const timedFile = new TimedFile({
         fileFullPath,
         versionsPath: `${gitTestFolder}`
       });
-      const beforeRollback = await readFilePromise(fileFullPath);
-      expect(beforeRollback.toString()).to.equal('Line 1\nLine 2\n');
+      const beforeFastForward = await readFilePromise(fileFullPath);
+      expect(beforeFastForward.toString()).to.equal('Line 1\n');
       expect(timedFile.rolls.length).to.equal(0);
 
       await timedFile.fastforward();
 
       const afterFastForward = await readFilePromise(fileFullPath);
-      expect(afterFastForward.toString()).to.equal('Line 1\nLine 2\n');
+      expect(afterFastForward.toString()).to.equal('Line 1\n');
       expect(timedFile.rolls.length).to.equal(0);
     });
 
     it('Able to FastForward', async function () {
-      const author = {
-        name: 'Raymond Ho',
-        email: 'chunkiat82@gmail.com'
-      };
       const timedFile = new TimedFile({
         fileFullPath,
         versionsPath: `${gitTestFolder}`
       });
       const beforeRollback = await readFilePromise(fileFullPath);
-      expect(beforeRollback.toString()).to.equal('Line 1\nLine 2\n');
+      expect(beforeRollback.toString()).to.equal('Line 1\n');
       await timedFile.rollback();
       const afterRollback = await readFilePromise(fileFullPath);
       expect(afterRollback.toString()).to.equal('Line 1\n');
@@ -203,10 +179,6 @@ describe('TimedFile', function () {
 
   describe('Reset', function () {
     it('Able to Reset', async function () {
-      const author = {
-        name: 'Raymond Ho',
-        email: 'chunkiat82@gmail.com'
-      };
       const timedFile = new TimedFile({
         fileFullPath,
         versionsPath: `${gitTestFolder}`

@@ -5,7 +5,10 @@ const debug = require('debug')('timedfile');
 import git from 'git-node';
 
 import {
-    writeFilePromise, readFilePromise, appendFilePromise, readFileSync
+  writeFilePromise,
+  readFilePromise,
+  appendFilePromise,
+  readFileSync
 } from './fileOperations';
 
 import path from 'path';
@@ -184,23 +187,19 @@ export default class TimedFile {
       fileFullPath
     } = that;
 
-    try {
-      const readFile = await readFilePromise(fileFullPath);
-      const contents = readFile.toString();
-      const commit = {
-        author,
-        contents
-      };
 
-      const contentsHash = await that._saveBlob(commit);
-      debug('save - contentsHash = %s', contentsHash);
-      that.commitHash = await that._saveAsCommit(commit);
-      debug('save - that.commitHash = %s', that.commitHash);
+    const readFile = await readFilePromise(fileFullPath);
+    const contents = readFile.toString();
+    const commit = {
+      author,
+      contents
+    };
 
-    } catch (e) {
-      debug('save - error %s', e);
-      throw new Error(e);
-    }
+    const contentsHash = await that._saveBlob(commit);
+    debug('save - contentsHash = %s', contentsHash);
+    that.commitHash = await that._saveAsCommit(commit);
+    debug('save - that.commitHash = %s', that.commitHash);
+
 
   }
 
@@ -275,21 +274,12 @@ export default class TimedFile {
       debug('rollback - loadTreeDiff[0].hash = %s', loadTreeDiff && loadTreeDiff[0].hash);
       const loadText = await that._load(loadTreeDiff[0].hash);
       await writeFilePromise(fileFullPath, loadText);
-    } else {
-      debug('Not existing commit found for rollback');
     }
 
   }
 
   reset = async() => {
     const that = this;
-
-    try {
-      const commitHashBufffer = await readFilePromise(that.headCommitFile);
-      that.commitHash = commitHashBufffer.toString();
-    } catch (e) {
-      that.commitHash = null;
-    }
 
     const {
       commitHash,
@@ -307,5 +297,3 @@ export default class TimedFile {
   }
 
 }
-
-
