@@ -8,6 +8,7 @@ const isparta = require('isparta');
 const webpack = require('webpack');
 const webpackStream = require('webpack-stream');
 const babel = require('gulp-babel');
+const coveralls = require('gulp-coveralls');
 
 const Instrumenter = isparta.Instrumenter;
 const mochaGlobals = require('./test/setup/.globals');
@@ -54,7 +55,7 @@ function lintGulpfile() {
 function build() {
   return gulp.src(config.entryFileName)
     .pipe(webpackStream({
-      target:'node',
+      target: 'node',
       output: {
         filename: `${exportFileName}.js`,
         library: config.mainVarName
@@ -66,24 +67,32 @@ function build() {
       // would externalize the `jquery` module.
       externals: {},
       module: {
-        loaders: [
-          {test: /\.json$/, loader: 'json-loader'},
-          {test: /\.js$/, exclude: /node_modules/, loader: 'babel-loader'}
-        ]
+        loaders: [{
+          test: /\.json$/,
+          loader: 'json-loader'
+        }, {
+          test: /\.js$/,
+          exclude: /node_modules/,
+          loader: 'babel-loader'
+        }]
       },
       devtool: 'source-map'
     }))
     .pipe(gulp.dest(destinationFolder))
     .pipe($.filter(['**', '!**/*.js.map']))
     .pipe($.rename(`${exportFileName}.min.js`))
-    .pipe($.sourcemaps.init({loadMaps: true}))
+    .pipe($.sourcemaps.init({
+      loadMaps: true
+    }))
     .pipe($.uglify())
     .pipe($.sourcemaps.write('./'))
     .pipe(gulp.dest(destinationFolder));
 }
 
 function _mocha() {
-  return gulp.src(['test/setup/node.js', 'test/unit/**/*.js'], {read: false})
+  return gulp.src(['test/setup/node.js', 'test/unit/**/*.js'], {
+      read: false
+    })
     .pipe($.mocha({
       // reporter: 'dot',
       globals: Object.keys(mochaGlobals.globals),
@@ -111,8 +120,12 @@ function coverage(done) {
     .on('finish', () => {
       return test()
         .pipe($.istanbul.writeReports())
-        .on('end', done);
+        .on('end', () => {
+          gulp.src('./coverage/**/lcov.info')
+            .pipe(coveralls()).on('finish', done);
+        });
     });
+
 }
 
 const watchFiles = ['src/**/*', 'test/**/*', 'package.json', '**/.eslintrc'];
