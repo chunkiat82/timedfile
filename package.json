@@ -4,7 +4,6 @@
   "description": "Timed File - versioning with files",
   "main": "dist/index.min.js",
   "scripts": {
-    "start": "babel-node src/index.js",
     "test": "gulp",
     "lint": "gulp lint",
     "test-browser": "gulp test-browser",
@@ -15,15 +14,15 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/chunkiat82/babel-template.git"
+    "url": "https://github.com/chunkiat82/timedfile.git"
   },
   "keywords": [],
   "author": "Raymond Ho <chunkiat82@gmail.com>",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/chunkiat82/babel-template/issues"
+    "url": "https://github.com/chunkiat82/timedfile/issues"
   },
-  "homepage": "https://github.com/chunkiat82/babel-template",
+  "homepage": "https://github.com/chunkiat82/timedfile",
   "devDependencies": {
     "babel-core": "6.14.0",
     "babel-eslint": "^7.1.1",
