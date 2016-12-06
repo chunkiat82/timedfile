@@ -94,7 +94,6 @@ describe('TimedFile', function () {
 
       const jsDiffs = await timedFile.diff();
 
-      log(JSON.stringify(jsDiffs));
       expect(jsDiffs).to.eql([{
         "count": 14,
         "value": "Line 1\nLine 2\n"
