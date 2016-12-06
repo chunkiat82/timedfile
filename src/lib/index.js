@@ -1,16 +1,19 @@
+require('colors');
+const PATH_DELIMITER = '/'; //path.delimiter;
+const FIXED_MESSAGE = 'Raymond Ho @ 2016';
+const jsdiff = require('diff');
+const debug = require('debug')('timedfile');
+
+import {
+    writeFilePromise, readFilePromise, appendFilePromise, readFileSync
+} from './fileOperations';
+
 import path from 'path';
 const {
   basename,
   dirname
 } = path;
 import git from 'git-node';
-import fs from 'fs-promise';
-require('colors');
-var jsdiff = require('diff');
-var debug = require('debug')('timedfile');
-
-const PATH_DELIMITER = '/'; //path.delimiter;
-const FIXED_MESSAGE = 'Raymond Ho @ 2016';
 
 export default class TimedFile {
   constructor(options) {
@@ -30,7 +33,7 @@ export default class TimedFile {
     this.rolls = [];
     this.tree = {};
     try {
-      this.commitHash = fs.readFileSync(this.headCommitFile).toString();
+      this.commitHash = readFileSync(this.headCommitFile).toString();
     } catch (e) {
       this.commitHash = null;
     }
@@ -172,7 +175,7 @@ export default class TimedFile {
     const {
       headCommitFile
     } = that;
-    return await fs.writeFile(headCommitFile, commitHash);
+    return await writeFilePromise(headCommitFile, commitHash);
   };
 
   save = async(author) => {
@@ -183,7 +186,7 @@ export default class TimedFile {
     } = that;
 
     try {
-      const readFile = await fs.readFile(fileFullPath);
+      const readFile = await readFilePromise(fileFullPath);
       const contents = readFile.toString();
       const commit = {
         author,
@@ -209,7 +212,7 @@ export default class TimedFile {
       commitHash,
     } = that;
 
-    const readFile = await fs.readFile(fileFullPath);
+    const readFile = await readFilePromise(fileFullPath);
     const currentText = readFile.toString();
 
     if (commitHash) {
@@ -235,11 +238,11 @@ export default class TimedFile {
     const commit = rolls.pop();
 
     if (commit) {
-      debug('fastforward - commit.tree - %s', commit.tree);      
+      debug('fastforward - commit.tree - %s', commit.tree);
       const loadTreeDiff = await that._loadTree(commit.tree);
       debug('rollback - loadTreeDiff[0].hash = %s', loadTreeDiff && loadTreeDiff[0].hash);
       const loadText = await that._load(loadTreeDiff[0].hash);
-      await fs.writeFile(fileFullPath, loadText);
+      await writeFilePromise(fileFullPath, loadText);
     } else {
       debug('Not existing commit found for fastforward');
     }
@@ -272,7 +275,7 @@ export default class TimedFile {
       const loadTreeDiff = await that._loadTree(commit.tree);
       debug('rollback - loadTreeDiff[0].hash = %s', loadTreeDiff && loadTreeDiff[0].hash);
       const loadText = await that._load(loadTreeDiff[0].hash);
-      await fs.writeFile(fileFullPath, loadText);
+      await writeFilePromise(fileFullPath, loadText);
     } else {
       debug('Not existing commit found for rollback');
     }
@@ -283,22 +286,27 @@ export default class TimedFile {
     const that = this;
 
     try {
-      const commitHashBufffer = await fs.readFile(that.headCommitFile);
+      const commitHashBufffer = await readFilePromise(that.headCommitFile);
       that.commitHash = commitHashBufffer.toString();
     } catch (e) {
       that.commitHash = null;
     }
 
-    const { commitHash, fileFullPath } = that;
+    const {
+      commitHash,
+      fileFullPath
+    } = that;
 
     if (commitHash) {
       const commit = await that._loadCommit(commitHash);
       const loadTreeDiff = await that._loadTree(commit.tree);
       const loadText = await that._load(loadTreeDiff[0].hash);
-      await fs.writeFile(fileFullPath, loadText);
+      await writeFilePromise(fileFullPath, loadText);
     } else {
       debug('Not existing commit found for reset');
     }
   }
 
 }
+
+

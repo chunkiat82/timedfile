@@ -1,8 +1,12 @@
-import fs from 'fs-promise';
-import path from 'path';
 import {
-  assert
-} from 'chai';
+  writeFilePromise,
+  readFilePromise,
+  appendFilePromise,
+  removePromise,
+  createFilePromise,
+  readFileSync
+} from '../../src/lib/fileOperations';
+import path from 'path';
 import TimedFile from '../../src/lib/index';
 import {
   log
@@ -16,7 +20,7 @@ const fileFullPath = [contentTestFolder, 'saveTest.js'].join(PATH_DELIMITER);
 describe('TimedFile', function () {
 
   before(async() => {
-    await fs.createFile(fileFullPath);
+    await createFilePromise(fileFullPath);
   });
 
   describe('Functionalities Present', function () {
@@ -43,7 +47,7 @@ describe('TimedFile', function () {
         fileFullPath,
         versionsPath: `${gitTestFolder}`
       });
-      await fs.writeFile(fileFullPath, 'Line 1\n');
+      await writeFilePromise(fileFullPath, 'Line 1\n');
 
       await timedFile.save(author);
 
@@ -59,7 +63,7 @@ describe('TimedFile', function () {
         name: 'Raymond Ho',
         email: 'chunkiat82@gmail.com'
       };
-      await fs.appendFile(fileFullPath, 'Line 2\n');
+      await appendFilePromise(fileFullPath, 'Line 2\n');
       const timedFile = new TimedFile({
         fileFullPath,
         versionsPath: `${gitTestFolder}`
@@ -86,9 +90,11 @@ describe('TimedFile', function () {
         fileFullPath,
         versionsPath: `${gitTestFolder}`
       });
-      await fs.appendFile(fileFullPath, 'Line 3\n');
+      await appendFilePromise(fileFullPath, 'Line 3\n');
 
       const jsDiffs = await timedFile.diff();
+
+      log(JSON.stringify(jsDiffs));
       expect(jsDiffs).to.eql([{
         "count": 14,
         "value": "Line 1\nLine 2\n"
@@ -106,12 +112,12 @@ describe('TimedFile', function () {
         name: 'Raymond Ho',
         email: 'chunkiat82@gmail.com'
       };
-       await fs.appendFile(fileFullPath, 'Line 3\n');
+      await appendFilePromise(fileFullPath, 'Line 3\n');
       const timedFile = new TimedFile({
         fileFullPath,
         versionsPath: `${gitTestFolder}`
       });
-      
+
       const jsDiffs = await timedFile.diff();
       expect(jsDiffs).to.eql([{
         "count": 14,
@@ -138,13 +144,13 @@ describe('TimedFile', function () {
         fileFullPath,
         versionsPath: `${gitTestFolder}`
       });
-      const beforeRollback = await fs.readFile(fileFullPath);
+      const beforeRollback = await readFilePromise(fileFullPath);
       expect(beforeRollback.toString()).to.equal('Line 1\nLine 2\n');
       const jsDiffs = await timedFile.diff();
 
       await timedFile.rollback();
 
-      const afterRollback = await fs.readFile(fileFullPath);
+      const afterRollback = await readFilePromise(fileFullPath);
       expect(afterRollback.toString()).to.equal('Line 1\n');
       expect(timedFile.rolls.length).to.equal(1);
       await timedFile.reset();
@@ -161,13 +167,13 @@ describe('TimedFile', function () {
         fileFullPath,
         versionsPath: `${gitTestFolder}`
       });
-      const beforeRollback = await fs.readFile(fileFullPath);
+      const beforeRollback = await readFilePromise(fileFullPath);
       expect(beforeRollback.toString()).to.equal('Line 1\nLine 2\n');
       expect(timedFile.rolls.length).to.equal(0);
 
       await timedFile.fastforward();
 
-      const afterFastForward = await fs.readFile(fileFullPath);
+      const afterFastForward = await readFilePromise(fileFullPath);
       expect(afterFastForward.toString()).to.equal('Line 1\nLine 2\n');
       expect(timedFile.rolls.length).to.equal(0);
     });
@@ -181,16 +187,16 @@ describe('TimedFile', function () {
         fileFullPath,
         versionsPath: `${gitTestFolder}`
       });
-      const beforeRollback = await fs.readFile(fileFullPath);
+      const beforeRollback = await readFilePromise(fileFullPath);
       expect(beforeRollback.toString()).to.equal('Line 1\nLine 2\n');
       await timedFile.rollback();
-      const afterRollback = await fs.readFile(fileFullPath);
+      const afterRollback = await readFilePromise(fileFullPath);
       expect(afterRollback.toString()).to.equal('Line 1\n');
       expect(timedFile.rolls.length).to.equal(1);
 
       await timedFile.fastforward();
 
-      const afterFastForward = await fs.readFile(fileFullPath);
+      const afterFastForward = await readFilePromise(fileFullPath);
       expect(afterFastForward.toString()).to.equal('Line 1\nLine 2\n');
       expect(timedFile.rolls.length).to.equal(0);
     });
@@ -206,21 +212,21 @@ describe('TimedFile', function () {
         fileFullPath,
         versionsPath: `${gitTestFolder}`
       });
-      await fs.appendFile(fileFullPath, 'Line 3\n');
-      const beforeReset = await fs.readFile(fileFullPath);
+      await appendFilePromise(fileFullPath, 'Line 3\n');
+      const beforeReset = await readFilePromise(fileFullPath);
       expect(beforeReset.toString()).to.equal('Line 1\nLine 2\nLine 3\n');
       expect(timedFile.rolls.length).to.equal(0);
 
       await timedFile.reset();
 
-      const afterReset = await fs.readFile(fileFullPath);
+      const afterReset = await readFilePromise(fileFullPath);
       expect(afterReset.toString()).to.equal('Line 1\nLine 2\n');
       expect(timedFile.rolls.length).to.equal(0);
     });
   });
 
   after('Tear Down', async() => {
-    await fs.remove(testFolder);
+    await removePromise(testFolder);
   });
 
 });
