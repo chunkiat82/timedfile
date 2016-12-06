@@ -1,5 +1,5 @@
 [![build status](https://img.shields.io/travis/chunkiat82/TimedFile/master.svg?style=flat-square)](https://travis-ci.org/chunkiat82/TimedFile)
-[![npm version](https://img.shields.io/npm/v/TimedFile.svg?style=flat-square)](https://www.npmjs.com/package/TimedFile)
+[![npm version](https://img.shields.io/npm/v/TimedFile.svg?style=flat-square)](https://www.npmjs.com/package/timedfile)
 [![npm downloads](https://img.shields.io/npm/dm/TimedFile.svg?style=flat-square)](https://www.npmjs.com/chunkiat82/TimedFile)
 [![npm downloads](https://img.shields.io/coveralls/chunkiat82/TimedFile/master.svg?style=flat-square)](https://coveralls.io/github/chunkiat82/TimedFile)
 ## TimedFile
