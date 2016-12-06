@@ -61,15 +61,13 @@
     "webpack-stream": "3.2.0"
   },
   "babelBoilerplateOptions": {
-    "entryFileName": "babel-template.js",
-    "mainVarName": "babelTemplate"
+    "entryFileName": "./src/lib/index.js",
+    "mainVarName": "timedfile"
   },
   "dependencies": {
-    "colors": "^1.1.2",
     "debug": "^2.3.3",
     "diff": "^3.1.0",
     "fs-extra": "^1.0.0",
-    "git-node": "^0.1.1",
-    "js-git": "^0.7.7"
+    "git-node": "^0.1.1"
   }
 }

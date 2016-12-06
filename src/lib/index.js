@@ -1,8 +1,8 @@
-require('colors');
 const PATH_DELIMITER = '/'; //path.delimiter;
 const FIXED_MESSAGE = 'Raymond Ho @ 2016';
 const jsdiff = require('diff');
 const debug = require('debug')('timedfile');
+import git from 'git-node';
 
 import {
     writeFilePromise, readFilePromise, appendFilePromise, readFileSync
@@ -13,7 +13,6 @@ const {
   basename,
   dirname
 } = path;
-import git from 'git-node';
 
 export default class TimedFile {
   constructor(options) {
