@@ -1,0 +1,15 @@
+{
+  "name": "examples",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Raymond Ho <rayho@paypal.com> (http://github.paypal.com/rayho)",
+  "license": "ISC",
+  "devDependencies": {
+    "babel-plugin-add-module-exports": "^0.2.1"
+  }
+}
