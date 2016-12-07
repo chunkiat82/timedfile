@@ -17,7 +17,7 @@ const {
   dirname
 } = path;
 
-export default class TimedFile {
+class TimedFile {
   constructor(options) {
 
     const {
@@ -297,3 +297,4 @@ export default class TimedFile {
   }
 
 }
+export default TimedFile

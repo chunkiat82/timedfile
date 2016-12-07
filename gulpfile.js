@@ -21,7 +21,7 @@ const $ = loadPlugins();
 const config = manifest.babelBoilerplateOptions;
 const mainFile = manifest.main;
 const destinationFolder = path.dirname(mainFile);
-const exportFileName = path.basename(mainFile, path.extname(mainFile));
+const exportFileName = config.mainVarName
 
 function cleanDist(done) {
   del([destinationFolder]).then(() => done());
@@ -50,43 +50,6 @@ function lintTest() {
 
 function lintGulpfile() {
   return lint('gulpfile.js');
-}
-
-function build() {
-  return gulp.src(config.entryFileName)
-    .pipe(webpackStream({
-      target: 'node',
-      output: {
-        filename: `${exportFileName}.js`,
-        library: config.mainVarName
-      },
-      // Add your own externals here. For instance,
-      // {
-      //   jquery: true
-      // }
-      // would externalize the `jquery` module.
-      externals: {},
-      module: {
-        loaders: [{
-          test: /\.json$/,
-          loader: 'json-loader'
-        }, {
-          test: /\.js$/,
-          exclude: /node_modules/,
-          loader: 'babel-loader'
-        }]
-      },
-      devtool: 'source-map'
-    }))
-    .pipe(gulp.dest(destinationFolder))
-    .pipe($.filter(['**', '!**/*.js.map']))
-    .pipe($.rename(`${exportFileName}.min.js`))
-    .pipe($.sourcemaps.init({
-      loadMaps: true
-    }))
-    .pipe($.uglify())
-    .pipe($.sourcemaps.write('./'))
-    .pipe(gulp.dest(destinationFolder));
 }
 
 function _mocha() {
@@ -153,9 +116,6 @@ gulp.task('lint-gulpfile', lintGulpfile);
 // Lint everything
 // gulp.task('lint', ['lint-src', 'lint-test', 'lint-gulpfile']);
 gulp.task('lint', ['lint-src', 'lint-gulpfile']);
-
-// Build two versions of the library
-gulp.task('build', ['lint', 'clean'], build);
 
 // Lint and run our tests
 gulp.task('test', ['lint'], test);
