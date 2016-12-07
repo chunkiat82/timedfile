@@ -100,12 +100,9 @@ function build() {
         library: true,
         libraryTarget: 'commonjs2'
       },
-      // Add your own externals here. For instance,
-      // {
-      //   jquery: true
-      // }
-      // would externalize the `jquery` module.
-      externals: {},
+      externals: [
+        "debug", "diff", "fs-extra", "git-node"
+      ],
       module: {
         loaders: [{
           test: /\.json$/,
