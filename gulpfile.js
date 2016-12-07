@@ -91,6 +91,44 @@ function coverage(done) {
 
 }
 
+function build() {
+  return gulp.src(config.entryFileName)
+    .pipe(webpackStream({
+      target: 'node',
+      output: {
+        filename: `${exportFileName}.min.js`,
+        library: true,
+        libraryTarget: 'commonjs2'
+      },
+      // Add your own externals here. For instance,
+      // {
+      //   jquery: true
+      // }
+      // would externalize the `jquery` module.
+      externals: {},
+      module: {
+        loaders: [{
+          test: /\.json$/,
+          loader: 'json-loader'
+        }, {
+          test: /\.js$/,
+          exclude: /node_modules/,
+          loader: 'babel-loader'
+        }]
+      }
+      // ,devtool: 'source-map'
+    }))
+    .pipe(gulp.dest(destinationFolder))
+    .pipe($.filter(['**', '!**/*.js.map']))
+    .pipe($.rename(`${exportFileName}.min.js`))
+    // .pipe($.sourcemaps.init({
+    //   loadMaps: true
+    // }))
+    .pipe($.uglify())
+    .pipe($.sourcemaps.write('./'))
+    .pipe(gulp.dest(destinationFolder));
+}
+
 const watchFiles = ['src/**/*', 'test/**/*', 'package.json', '**/.eslintrc'];
 
 // Run the headless unit tests as you make changes.
@@ -128,3 +166,6 @@ gulp.task('watch', watch);
 
 // An alias of test
 gulp.task('default', ['test']);
+
+//build
+gulp.task('build', ['lint', 'clean'], build);

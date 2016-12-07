@@ -1,10 +1,18 @@
-const TimedFile = require('../dist/index');
+const fs = require('fs');
+const TimedFile = require('../dist/timedfile.min');
+console.log('Start Example');
 
-const fileFullPath = [__dirname, 'examples', 'content', 'testfile.js'].join('/');
-const versionsPath = [__dirname, 'examples', 'git'].join('/');
+const fileFullPath = [__dirname, 'tmp', 'testfile.js'].join('/');
+const versionsPath = [__dirname, 'tmp', 'git'].join('/');
+
 const timedfile = new TimedFile({
   fileFullPath,
   versionsPath
 });
-timedfile.save();
-timedfile.reset();
+
+fs.writeFile(fileFullPath, 'Hello World', function(err){
+    if (err) return console.log(err);
+    timedfile.save();
+    timedfile.reset();
+});
+console.log('Completed Example');

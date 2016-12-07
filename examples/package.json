@@ -8,8 +8,5 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "Raymond Ho <rayho@paypal.com> (http://github.paypal.com/rayho)",
-  "license": "ISC",
-  "devDependencies": {
-    "babel-plugin-add-module-exports": "^0.2.1"
-  }
+  "license": "ISC"
 }
