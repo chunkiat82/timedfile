@@ -57,7 +57,7 @@ describe('TimedFile - Cleaning Up', function () {
   });
 
   after('Tear Down', async() => {
-    await removePromise(testFolder);
+    // await removePromise(testFolder);
   });
 
 });

@@ -53,7 +53,7 @@ function lintGulpfile() {
 }
 
 function _mocha() {
-  return gulp.src(['test/setup/node.js', 'test/unit/**/*.js'], {
+  return gulp.src(['test/setup/node.js', 'test/unit/**/clean.js'], {
       read: false
     })
     .pipe($.mocha({
