@@ -181,24 +181,14 @@ class TimedFile {
     return await writeFilePromise(headCommitFile, commitHash);
   };
 
-  _loadRolls = async() => {
-    const that = this;
-    const {
-      rollsFile
-    } = that;
-    const readFile = await readFilePromise(rollsFile);
-    that.rolls = JSON.parse(readFile.toString());
-    return;
-  }
-
   _saveRolls = async() => {
     const that = this;
     const {
       rolls,
       rollsFile
     } = that;
-    console.log(rollsFile);
-    console.log(rolls);
+
+    debug('_saveRolls rolls = %s', rolls.length);
     return await writeFilePromise(rollsFile, JSON.stringify(rolls));
   };
 
@@ -234,7 +224,8 @@ class TimedFile {
     debug('save - contentsHash = %s', contentsHash);
     that.commitHash = await that._saveAsCommit(commit);
     debug('save - that.commitHash = %s', that.commitHash);
-
+    that.rolls = [];
+    await that._saveRolls();
 
   }
 
@@ -296,11 +287,10 @@ class TimedFile {
   fastforward = async() => {
     const that = this;
     const {
-      fileFullPath,
-      rolls
+      fileFullPath      
     } = that;
-
-    const commit = rolls.pop();
+    
+    const commit = that.rolls.pop();
     await that._saveRolls();
 
     if (commit) {
@@ -312,6 +302,8 @@ class TimedFile {
     } else {
       debug('Not existing commit found for fastforward');
     }
+
+    debug('fastforward - that.rolls.length %s', that.rolls.length);
 
   }
 

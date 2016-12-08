@@ -21,7 +21,7 @@ const author = {
   email: 'chunkiat82@gmail.com'
 };
 
-describe('TimedFile - Fresh', function () {
+describe('TimedFile - Others', function () {
 
   before(async() => {
     await createFilePromise(fileFullPath);
