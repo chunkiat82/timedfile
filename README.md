@@ -8,12 +8,13 @@ If you need a single file to be versioned, this wrapper for you.
 
 ## Features
 
-You can `save`, `rollback`, `fastforward` and `reset`
+You can `save`, `rollback`, `fastforward`, `reset` and `clean`
 
 * `save` to create a version on the timeline which you rollback, fastforward or reset to.
 * `rollback` to go back to a version which you have saved before
 * `fastforward` to fast forward to a version during a rollback
-* `reset` to remove all existing configurations to the current version on the timeline (not always the latest)
+* `reset` to remove all existing changes to the current version on the timeline (not always the latest)
+* `clean` to remove all existing versioning data (including commits and rollbacks), as good a new timedfile.
 
 ## Basic Usage
 
@@ -75,6 +76,13 @@ Regardless of the contents in the file,
 ```js
 await timedFile.reset();
 ```
+
+* Clean
+
+```js
+await timedFile.clean();
+```
+
 
 
 
