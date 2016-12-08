@@ -8,7 +8,8 @@ import {
   writeFilePromise,
   readFilePromise,
   appendFilePromise,
-  readFileSync
+  readFileSync,
+  removePromise
 } from './fileOperations';
 
 import path from 'path';
@@ -30,9 +31,10 @@ class TimedFile {
     this.fileFullPath = path.normalize(fileFullPath);
     this.directory = dirname(this.fileFullPath);
     this.filename = basename(this.fileFullPath);
-    this.repoPath = path.normalize(versionsPath || this.directory);
-    this.headCommitFile = [this.repoPath, `${this.fileFullPath.split(PATH_DELIMITER).join('.')}.commit`].join(PATH_DELIMITER);
-    this.rollsFile = [this.repoPath, `${this.fileFullPath.split(PATH_DELIMITER).join('.')}.rolls`].join(PATH_DELIMITER);
+    this.versionsPath = path.normalize(versionsPath || this.directory);
+    this.repoPath = [this.versionsPath, `${this.fileFullPath.split(PATH_DELIMITER).join('.')}`].join(PATH_DELIMITER);
+    this.headCommitFile = [this.repoPath, 'commit.txt'].join(PATH_DELIMITER);
+    this.rollsFile = [this.repoPath, 'rolls.txt'].join(PATH_DELIMITER);
     this.repo = git.repo(this.repoPath);
     this.tree = {};
     try {
@@ -277,10 +279,7 @@ class TimedFile {
         return null;
       }
 
-
     }
-
-
 
   }
 
@@ -324,6 +323,20 @@ class TimedFile {
     } else {
       debug('Not existing commit found for reset');
     }
+  }
+
+  clean = async() => {
+    const that = this;
+
+    const {
+      fileFullPath
+    } = that;
+
+    await removePromise(fileFullPath);
+    that.rolls = [];
+    await that._saveRolls();
+    that.commitHash = null;
+    await that._saveCommitHead(that.commitHash);
   }
 
 }

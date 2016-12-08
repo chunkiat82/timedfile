@@ -50,6 +50,7 @@ export function removePromise(fileFullPath) {
     })
   });
 }
+
 export default {
     writeFilePromise, readFilePromise, appendFilePromise, createFilePromise, removePromise, readFileSync
 }
