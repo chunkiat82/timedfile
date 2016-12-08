@@ -33,6 +33,7 @@ class TimedFile {
     this.filename = basename(this.fileFullPath);
     this.versionsPath = path.normalize(versionsPath || this.directory);
     this.repoPath = [this.versionsPath, `${this.fileFullPath.split(PATH_DELIMITER).join('.')}`].join(PATH_DELIMITER);
+    this.repoObjectsPath = [this.repoPath, 'objects'].join(PATH_DELIMITER);
     this.headCommitFile = [this.repoPath, 'commit.txt'].join(PATH_DELIMITER);
     this.rollsFile = [this.repoPath, 'rolls.txt'].join(PATH_DELIMITER);
     this.repo = git.repo(this.repoPath);
@@ -329,10 +330,10 @@ class TimedFile {
     const that = this;
 
     const {
-      fileFullPath
+      repoObjectsPath
     } = that;
 
-    await removePromise(fileFullPath);
+    await removePromise(repoObjectsPath);
     that.rolls = [];
     await that._saveRolls();
     that.commitHash = null;
