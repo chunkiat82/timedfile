@@ -140,7 +140,8 @@ describe('TimedFile', function () {
     });
   });
 
-  describe('FastForward', function () {
+  describe('FastForward', async function () {
+    await removePromise(testFolder);
     it('Nothing to Fast Forward', async function () {
       const timedFile = new TimedFile({
         fileFullPath,
@@ -177,7 +178,8 @@ describe('TimedFile', function () {
     });
   });
 
-  describe('Reset', function () {
+  describe('Reset', async function () {
+    await removePromise(testFolder);
     it('Able to Reset', async function () {
       const timedFile = new TimedFile({
         fileFullPath,

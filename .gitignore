@@ -1,3 +1,4 @@
+**/*.rolls
 dist/
 **/git/objects/
 test/testcases/git/**

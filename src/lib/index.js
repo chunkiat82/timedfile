@@ -16,6 +16,7 @@ const {
   basename,
   dirname
 } = path;
+import mkdirp from 'mkdirp';
 
 class TimedFile {
   constructor(options) {
@@ -26,21 +27,34 @@ class TimedFile {
       versionsPath
     } = options;
 
-    this.fileFullPath = fileFullPath;
+    this.fileFullPath = path.normalize(fileFullPath);
     this.directory = dirname(this.fileFullPath);
     this.filename = basename(this.fileFullPath);
-    this.repoPath = versionsPath || this.directory;
+    this.repoPath = path.normalize(versionsPath || this.directory);
     this.headCommitFile = [this.repoPath, `${this.fileFullPath.split(PATH_DELIMITER).join('.')}.commit`].join(PATH_DELIMITER);
+    this.rollsFile = [this.repoPath, `${this.fileFullPath.split(PATH_DELIMITER).join('.')}.rolls`].join(PATH_DELIMITER);
     this.repo = git.repo(this.repoPath);
-    this.rolls = [];
     this.tree = {};
     try {
       this.commitHash = readFileSync(this.headCommitFile).toString();
     } catch (e) {
       this.commitHash = null;
     }
-    debug('constructor - this.commitHash = %s', this.commitHash);
 
+    try {
+      this.rolls = JSON.parse(readFileSync(this.rollsFile).toString());
+    } catch (e) {
+      this.rolls = [];
+    }
+    
+    try {
+      mkdirp(this.repoPath);
+      debug('constructor - this.repoPath = %s creation succeded', this.repoPath);
+    } catch (e) {
+      debug('constructor - this.repoPath = %s creation failed', this.repoPath);
+    }
+
+    debug('constructor - this.commitHash = %s', this.commitHash);
   }
 
   _saveBlob = (commit) => {
@@ -159,6 +173,35 @@ class TimedFile {
     });
   }
 
+  _saveCommitHead = async(commitHash) => {
+    const that = this;
+    const {
+      headCommitFile
+    } = that;
+    return await writeFilePromise(headCommitFile, commitHash);
+  };
+
+  _loadRolls = async() => {
+    const that = this;
+    const {
+      rollsFile
+    } = that;
+    const readFile = await readFilePromise(rollsFile);
+    that.rolls = JSON.parse(readFile.toString());
+    return;
+  }
+
+  _saveRolls = async() => {
+    const that = this;
+    const {
+      rolls,
+      rollsFile
+    } = that;
+    console.log(rollsFile);
+    console.log(rolls);
+    return await writeFilePromise(rollsFile, JSON.stringify(rolls));
+  };
+
   _load = (blobHash) => {
     const that = this;
     const {
@@ -171,14 +214,6 @@ class TimedFile {
       });
     });
   }
-
-  _saveCommitHead = async(commitHash) => {
-    const that = this;
-    const {
-      headCommitFile
-    } = that;
-    return await writeFilePromise(headCommitFile, commitHash);
-  };
 
   save = async(author) => {
     var that = this;
@@ -226,27 +261,6 @@ class TimedFile {
     }
   }
 
-  fastforward = async() => {
-    const that = this;
-    const {
-      fileFullPath,
-      rolls
-    } = that;
-
-    const commit = rolls.pop();
-
-    if (commit) {
-      debug('fastforward - commit.tree - %s', commit.tree);
-      const loadTreeDiff = await that._loadTree(commit.tree);
-      debug('rollback - loadTreeDiff[0].hash = %s', loadTreeDiff && loadTreeDiff[0].hash);
-      const loadText = await that._load(loadTreeDiff[0].hash);
-      await writeFilePromise(fileFullPath, loadText);
-    } else {
-      debug('Not existing commit found for fastforward');
-    }
-
-  }
-
   /* we have to check if file is saved , not done yet */
   rollback = async() => {
 
@@ -265,6 +279,7 @@ class TimedFile {
         const parentCommitHash = commit.parents[0];
         that.commitHash = parentCommitHash;
         this.rolls.push(commit);
+        await that._saveRolls();
         commit = await that._loadCommit(parentCommitHash);
       } else {
         debug('rollback - headCommitDiff does not any parent that is single, it has [%s] parents', commit.parents.length);
@@ -274,6 +289,28 @@ class TimedFile {
       debug('rollback - loadTreeDiff[0].hash = %s', loadTreeDiff && loadTreeDiff[0].hash);
       const loadText = await that._load(loadTreeDiff[0].hash);
       await writeFilePromise(fileFullPath, loadText);
+    }
+
+  }
+
+  fastforward = async() => {
+    const that = this;
+    const {
+      fileFullPath,
+      rolls
+    } = that;
+
+    const commit = rolls.pop();
+    await that._saveRolls();
+
+    if (commit) {
+      debug('fastforward - commit.tree - %s', commit.tree);
+      const loadTreeDiff = await that._loadTree(commit.tree);
+      debug('rollback - loadTreeDiff[0].hash = %s', loadTreeDiff && loadTreeDiff[0].hash);
+      const loadText = await that._load(loadTreeDiff[0].hash);
+      await writeFilePromise(fileFullPath, loadText);
+    } else {
+      debug('Not existing commit found for fastforward');
     }
 
   }
