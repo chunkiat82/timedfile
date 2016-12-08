@@ -111,6 +111,28 @@ describe('TimedFile - Continuity', function () {
       expect(afterFastforward).to.equal('Line 2\n'); //it's write file not append
 
     });
+
+    it('Able to fastfoward till we reach the end with null', async function () {
+      const timedFile = new TimedFile({
+        fileFullPath
+      });
+
+      const afterFastforward = await timedFile.fastforward();
+
+      expect(afterFastforward).to.equal(null);
+
+    });
+
+    it('Able to fastfoward till we reach the end with null', async function () {
+      const timedFile = new TimedFile({
+        fileFullPath
+      });
+
+      while (await timedFile.rollback()){}
+
+      expect(true);
+
+    });
   });
 
   after('Tear Down', async() => {

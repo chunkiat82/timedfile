@@ -46,13 +46,9 @@ class TimedFile {
     } catch (e) {
       this.rolls = [];
     }
-    
-    try {
-      mkdirp(this.repoPath);
-      debug('constructor - this.repoPath = %s creation succeded', this.repoPath);
-    } catch (e) {
-      debug('constructor - this.repoPath = %s creation failed', this.repoPath);
-    }
+
+    mkdirp(this.repoPath);
+    debug('constructor - this.repoPath = %s creation succeded', this.repoPath);
 
     debug('constructor - this.commitHash = %s', this.commitHash);
   }
@@ -272,25 +268,28 @@ class TimedFile {
         this.rolls.push(commit);
         await that._saveRolls();
         commit = await that._loadCommit(parentCommitHash);
+        const loadTreeDiff = await that._loadTree(commit.tree);
+        debug('rollback - loadTreeDiff[0].hash = %s', loadTreeDiff && loadTreeDiff[0].hash);
+        const loadText = await that._load(loadTreeDiff[0].hash);
+        await writeFilePromise(fileFullPath, loadText);
+        return loadText;
       } else {
-        debug('rollback - headCommitDiff does not any parent that is single, it has [%s] parents', commit.parents.length);
+        return null;
       }
 
-      const loadTreeDiff = await that._loadTree(commit.tree);
-      debug('rollback - loadTreeDiff[0].hash = %s', loadTreeDiff && loadTreeDiff[0].hash);
-      const loadText = await that._load(loadTreeDiff[0].hash);
-      await writeFilePromise(fileFullPath, loadText);
-      return loadText;
+
     }
+
+
 
   }
 
   fastforward = async() => {
     const that = this;
     const {
-      fileFullPath      
+      fileFullPath
     } = that;
-    
+
     const commit = that.rolls.pop();
     await that._saveRolls();
 
@@ -300,13 +299,12 @@ class TimedFile {
       debug('rollback - loadTreeDiff[0].hash = %s', loadTreeDiff && loadTreeDiff[0].hash);
       const loadText = await that._load(loadTreeDiff[0].hash);
       await writeFilePromise(fileFullPath, loadText);
-    } else {
-      debug('Not existing commit found for fastforward');
+      return loadText;
     }
 
     debug('fastforward - that.rolls.length %s', that.rolls.length);
 
-    return loadText;
+    return null;
 
   }
 
