@@ -194,6 +194,25 @@ describe('TimedFile', function () {
       expect(afterReset.toString()).to.equal('Line 1\nLine 2\n');
       expect(timedFile.rolls.length).to.equal(0);
     });
+
+    it('Able to Reset correctly without rolling back', async function () {
+      const timedFile = new TimedFile({
+        fileFullPath,
+        versionsPath: `${gitTestFolder}`
+      });
+      const beforeReset = await readFilePromise(fileFullPath);
+      expect(beforeReset.toString()).to.equal('Line 1\nLine 2\n');
+      expect(timedFile.rolls.length).to.equal(0);
+
+      await appendFilePromise(fileFullPath, 'Line 3\n');
+      await timedFile.save(author);
+      await timedFile.rollback();
+      await timedFile.reset();
+
+      const afterReset = await readFilePromise(fileFullPath);
+      expect(afterReset.toString()).to.equal('Line 1\nLine 2\n');
+      expect(timedFile.rolls.length).to.equal(1);
+    });
   });
 
   after('Tear Down', async() => {

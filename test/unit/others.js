@@ -56,7 +56,7 @@ describe('TimedFile - Fresh', function () {
 
   describe('Reset', function () {
 
-    it('Able to reset safely even when there is nothing to reset', async function () {
+    it('Able to reset safely even when there is nothing to reset 1', async function () {
       const timedFile = new TimedFile({
         fileFullPath: [contentTestFolder, 'empty.js'].join(PATH_DELIMITER)
       });
@@ -64,7 +64,7 @@ describe('TimedFile - Fresh', function () {
       expect(true);
     });
 
-    it('Able to reset safely even when there is nothing to reset', async function () {
+    it('Able to reset safely even when there is nothing to reset 2', async function () {
       const timedFile = new TimedFile({
         fileFullPath
       });

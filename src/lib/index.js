@@ -30,7 +30,7 @@ class TimedFile {
     this.directory = dirname(this.fileFullPath);
     this.filename = basename(this.fileFullPath);
     this.repoPath = versionsPath || this.directory;
-    this.headCommitFile = [this.repoPath, `${this.filename}.commit`].join(PATH_DELIMITER);
+    this.headCommitFile = [this.repoPath, `${this.fileFullPath.split(PATH_DELIMITER).join('.')}.commit`].join(PATH_DELIMITER);
     this.repo = git.repo(this.repoPath);
     this.rolls = [];
     this.tree = {};
