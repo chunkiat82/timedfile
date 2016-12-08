@@ -133,6 +133,27 @@ describe('TimedFile - Continuity', function () {
       expect(true);
 
     });
+
+    it('Able to rollback then fastfoward then reset', async function () {
+      const timedFile = new TimedFile({
+        fileFullPath
+      });
+
+      const afterFastforward = await timedFile.fastforward();
+
+      expect(afterFastforward).to.equal('Line 2\n');
+
+      await writeFilePromise(fileFullPath, 'You should never see this\n');
+
+      const afterWriting = await readFilePromise(fileFullPath);
+
+      expect(afterWriting.toString()).to.equal('You should never see this\n');
+
+      const afterRest = await timedFile.reset();
+
+      expect(afterRest).to.equal('Line 2\n');
+
+    });
   });
 
   after('Tear Down', async() => {

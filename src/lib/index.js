@@ -268,7 +268,10 @@ class TimedFile {
       if (commit.parents.length === 1) {
         const parentCommitHash = commit.parents[0];
         that.commitHash = parentCommitHash;
-        this.rolls.push(commit);
+        this.rolls.push({
+          commitHash,
+          commit
+        });
         await that._saveRolls();
         commit = await that._loadCommit(parentCommitHash);
         const loadTreeDiff = await that._loadTree(commit.tree);
@@ -290,11 +293,18 @@ class TimedFile {
       fileFullPath
     } = that;
 
-    const commit = that.rolls.pop();
+    const roll = that.rolls.pop();
     await that._saveRolls();
 
-    if (commit) {
+    if (roll) {
+      const {
+        commit,
+        commitHash
+      } = roll;
+      
+      debug('fastforward - commit JSON = %s', JSON.stringify(commit));
       debug('fastforward - commit.tree - %s', commit.tree);
+      that.commitHash = commitHash;
       const loadTreeDiff = await that._loadTree(commit.tree);
       debug('rollback - loadTreeDiff[0].hash = %s', loadTreeDiff && loadTreeDiff[0].hash);
       const loadText = await that._load(loadTreeDiff[0].hash);
@@ -321,8 +331,10 @@ class TimedFile {
       const loadTreeDiff = await that._loadTree(commit.tree);
       const loadText = await that._load(loadTreeDiff[0].hash);
       await writeFilePromise(fileFullPath, loadText);
+      return loadText;
     } else {
       debug('Not existing commit found for reset');
+      return null;
     }
   }
 
