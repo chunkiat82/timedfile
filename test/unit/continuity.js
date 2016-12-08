@@ -104,12 +104,11 @@ describe('TimedFile - Continuity', function () {
       const afterReset = await readFilePromise(fileFullPath);
       expect(afterReset.toString()).to.equal('Line 1\n');
 
-      await timedFileAgain.fastforward();
+      const afterFastforward = await timedFileAgain.fastforward();
 
       expect(timedFileAgain.rolls.length).to.equal(0);
 
-      const afterFastforward = await readFilePromise(fileFullPath);
-      expect(afterFastforward.toString()).to.equal('Line 2\n'); //it's write file
+      expect(afterFastforward).to.equal('Line 2\n'); //it's write file not append
 
     });
   });

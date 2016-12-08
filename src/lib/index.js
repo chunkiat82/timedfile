@@ -280,6 +280,7 @@ class TimedFile {
       debug('rollback - loadTreeDiff[0].hash = %s', loadTreeDiff && loadTreeDiff[0].hash);
       const loadText = await that._load(loadTreeDiff[0].hash);
       await writeFilePromise(fileFullPath, loadText);
+      return loadText;
     }
 
   }
@@ -304,6 +305,8 @@ class TimedFile {
     }
 
     debug('fastforward - that.rolls.length %s', that.rolls.length);
+
+    return loadText;
 
   }
 
