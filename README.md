@@ -15,6 +15,8 @@ You can `save`, `rollback`, `fastforward`, `reset` and `clean`
 * `fastforward` to fast forward to a version during a rollback
 * `reset` to remove all existing changes to the current version on the timeline (not always the latest)
 * `clean` to remove all existing versioning data (including commits and rollbacks), as good a new timedfile.
+* `diff` shows the content difference between modified text and current saved state
+* `diffs` shows a timeline of all the changes in diff format from [npm-diff](https://github.com/kpdecker/jsdiff)
 
 ## Basic Usage
 
@@ -83,12 +85,15 @@ await timedFile.reset();
 await timedFile.clean();
 ```
 
+#### To Diff
+* Diff
 
+```js
+await timedFile.diff();
+```
 
+* Diffs
 
-
-
-
-
-
-
+```js
+await timedFile.diffs();
+```
