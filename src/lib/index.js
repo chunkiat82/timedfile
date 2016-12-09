@@ -238,6 +238,7 @@ class TimedFile {
         commitHash = null;        
       }
     }
+    debug('diffsCollect - diffsCollect length %d', diffsCollect.length);
     return diffsCollect;
   }
 
