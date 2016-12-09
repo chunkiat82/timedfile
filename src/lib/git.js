@@ -1,6 +1,8 @@
 const FIXED_MESSAGE = 'Raymond Ho @ 2016';
 const debug = require('debug')('timedfile');
 
+import git from 'git-node';
+
 import {
   writeFilePromise,
   readFilePromise,
@@ -8,6 +10,10 @@ import {
   readFileSync,
   removePromise
 } from './file';
+
+function initRepo(repoPath){
+  return git.repo(repoPath);
+}
 
 function saveBlob(commit) {
   const that = this;
@@ -158,6 +164,7 @@ async function loadText(blobHash) {
 }
 
 export default {
+  initRepo,
   saveBlob,
   saveCommit,
   loadTree,

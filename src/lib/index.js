@@ -1,7 +1,6 @@
 const PATH_DELIMITER = '/'; //path.delimiter;
 const jsdiff = require('diff');
 const debug = require('debug')('timedfile');
-import git from 'git-node';
 
 import {
   writeFilePromise,
@@ -12,6 +11,7 @@ import {
 } from './file';
 
 import {
+  initRepo,
   saveBlob,
   saveCommit,
   loadTree,
@@ -45,7 +45,7 @@ class TimedFile {
     this.repoObjectsPath = [this.repoPath, 'objects'].join(PATH_DELIMITER);
     this.headCommitFile = [this.repoPath, 'commit.txt'].join(PATH_DELIMITER);
     this.rollsFile = [this.repoPath, 'rolls.txt'].join(PATH_DELIMITER);
-    this.repo = git.repo(this.repoPath);
+    this.repo = initRepo(this.repoPath);
     this.repoPathCreated = false;
     this.tree = {};
     try {
@@ -59,13 +59,14 @@ class TimedFile {
     } catch (e) {
       this.rolls = [];
     }
-
     
     debug('constructor - this.repoPath = %s creation succeded', this.repoPath);
     debug('constructor - this.commitHash = %s', this.commitHash);
   }
 
   save = async(author) => {
+
+    if (author === undefined) throw new Error('Author - {name, email} is missing');
 
     const that = this;
 
