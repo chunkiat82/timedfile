@@ -79,7 +79,7 @@ class TimedFile {
     };
     console.log(`that.filename=${that.filename}`);
 
-    const contentsHash = await saveBlob.call(that, commit);
+    const contentsHash = await that::saveBlob(commit);
     debug('save - contentsHash = %s', contentsHash);
     that.commitHash = await saveCommit.call(that, commit);
     debug('save - that.commitHash = %s', that.commitHash);
