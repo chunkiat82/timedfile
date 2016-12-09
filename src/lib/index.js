@@ -223,15 +223,18 @@ class TimedFile {
     const that = this;
 
     const diffsCollect = [];
-
+    debug('diffs - that.headCommitFile = %s', that.headCommitFile);
     let commitHash = readFileSync(that.headCommitFile).toString();
     while (commitHash) {
+      debug('diffs - commitHash = %s', commitHash);
       let commit = await that::loadCommit(commitHash);
       if (commit.parents.length === 1) {
         const parentCommitHash = commit.parents[0];
+        debug('diffs - parentCommitHash = %s', parentCommitHash);
         diffsCollect[diffsCollect.length] = await that::diffCommits(parentCommitHash, commitHash);
-        commitHash = parentCommitHash;
+        commitHash = parentCommitHash;        
       } else {
+        debug('diffs - commitHash not found');
         commitHash = null;        
       }
     }

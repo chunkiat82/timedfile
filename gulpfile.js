@@ -121,9 +121,9 @@ function build() {
     // .pipe($.sourcemaps.init({
     //   loadMaps: true
     // }))
-    .pipe($.uglify())
-    .pipe($.sourcemaps.write('./'))
-    .pipe(gulp.dest(destinationFolder));
+    // .pipe($.uglify())
+    // .pipe($.sourcemaps.write('./'))
+    // .pipe(gulp.dest(destinationFolder));
 }
 
 const watchFiles = ['src/**/*', 'test/**/*', 'package.json', '**/.eslintrc'];
