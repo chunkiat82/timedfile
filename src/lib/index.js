@@ -46,6 +46,7 @@ class TimedFile {
     this.headCommitFile = [this.repoPath, 'commit.txt'].join(PATH_DELIMITER);
     this.rollsFile = [this.repoPath, 'rolls.txt'].join(PATH_DELIMITER);
     this.repo = git.repo(this.repoPath);
+    this.repoPathCreated = false;
     this.tree = {};
     try {
       this.commitHash = readFileSync(this.headCommitFile).toString();
@@ -59,17 +60,22 @@ class TimedFile {
       this.rolls = [];
     }
 
-    mkdirp(this.repoPath);
+    
     debug('constructor - this.repoPath = %s creation succeded', this.repoPath);
     debug('constructor - this.commitHash = %s', this.commitHash);
   }
 
   save = async(author) => {
+
     const that = this;
 
     const {
-      fileFullPath
+      repoPathCreated,
+      fileFullPath,
+      repoPath
     } = that;
+
+    if (!repoPathCreated) mkdirp.sync(repoPath); 
 
     const readFile = await readFilePromise(fileFullPath);
     const contents = readFile.toString();
@@ -77,7 +83,6 @@ class TimedFile {
       author,
       contents
     };
-    console.log(`that.filename=${that.filename}`);
 
     const contentsHash = await that::saveBlob(commit);
     debug('save - contentsHash = %s', contentsHash);
@@ -201,14 +206,15 @@ class TimedFile {
     const that = this;
 
     const {
-      repoObjectsPath
+      repoPath
     } = that;
-
-    await removePromise(repoObjectsPath);
+    
     that.rolls = [];
-    await that::saveRolls();
+    // await that::saveRolls();
     that.commitHash = null;
-    await that::saveCommitHead(that.commitHash);
+    // await that::saveCommitHead(that.commitHash);
+    await removePromise(repoPath);
+    that.repoPathCreated = false;
   }
 
 }

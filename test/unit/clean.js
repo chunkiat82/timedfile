@@ -50,8 +50,14 @@ describe('TimedFile - Cleaning Up', function () {
 
       expect(timedFile.commitHash).to.equal(null);
 
-      expect(JSON.parse(readFileSync(timedFile.rollsFile).toString())).to.be.empty;
-      expect(JSON.parse(readFileSync(timedFile.headCommitFile).toString())).to.be.null;
+      expect(timedFile.rolls == []); 
+
+      expect(timedFile.repoPathCreated).to.equal(false);
+
+      await timedFile.save(author);
+
+      expect(timedFile.commitHash).to.not.equal(null);
+      
     });
 
   });

@@ -1,5 +1,5 @@
 /* this file can be better with generator functions */
-
+const debug = require('debug')('timedfile');
 import fs from 'fs-extra';
 
 export function writeFilePromise(fileFullPath, loadText) {
@@ -43,6 +43,7 @@ export function readFileSync(headCommitFile){
 }
 
 export function removePromise(fileFullPath) {
+  debug('removePromise - removing - %s', fileFullPath)
   return new Promise((resolve, reject) => {
     fs.remove(fileFullPath, (err) => {
       if (err) return reject(err);
