@@ -18,7 +18,8 @@ import {
   loadCommit,
   saveCommitHead,
   saveRolls,
-  loadText
+  loadText,
+  diffCommits
 } from './git';
 
 import path from 'path';
@@ -59,7 +60,7 @@ class TimedFile {
     } catch (e) {
       this.rolls = [];
     }
-    
+
     debug('constructor - this.repoPath = %s creation succeded', this.repoPath);
     debug('constructor - this.commitHash = %s', this.commitHash);
   }
@@ -76,7 +77,7 @@ class TimedFile {
       repoPath
     } = that;
 
-    if (!repoPathCreated) mkdirp.sync(repoPath); 
+    if (!repoPathCreated) mkdirp.sync(repoPath);
 
     const readFile = await readFilePromise(fileFullPath);
     const contents = readFile.toString();
@@ -167,7 +168,7 @@ class TimedFile {
         commit,
         commitHash
       } = roll;
-      
+
       debug('fastforward - commit.tree - %s', commit.tree);
       that.commitHash = commitHash;
       const loadTreeDiff = await that::loadTree(commit.tree);
@@ -209,13 +210,32 @@ class TimedFile {
     const {
       repoPath
     } = that;
-    
+
     that.rolls = [];
     // await that::saveRolls();
     that.commitHash = null;
     // await that::saveCommitHead(that.commitHash);
     await removePromise(repoPath);
     that.repoPathCreated = false;
+  }
+
+  diffs = async() => {
+    const that = this;
+
+    const diffsCollect = [];
+
+    let commitHash = readFileSync(that.headCommitFile).toString();
+    while (commitHash) {
+      let commit = await that::loadCommit(commitHash);
+      if (commit.parents.length === 1) {
+        const parentCommitHash = commit.parents[0];
+        diffsCollect[diffsCollect.length] = await that::diffCommits(parentCommitHash, commitHash);
+        commitHash = parentCommitHash;
+      } else {
+        commitHash = null;        
+      }
+    }
+    return diffsCollect;
   }
 
 }

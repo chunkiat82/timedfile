@@ -16,10 +16,6 @@ const testFolder = [__dirname, '..', 'testcases-error'].join(PATH_DELIMITER)
 const gitTestFolder = [testFolder, 'git'].join(PATH_DELIMITER);
 const contentTestFolder = [testFolder, 'content'].join(PATH_DELIMITER);
 const fileFullPath = [contentTestFolder, 'saveTest.js'].join(PATH_DELIMITER);
-const author = {
-  name: 'Raymond Ho',
-  email: 'chunkiat82@gmail.com'
-};
 
 describe('TimedFile - Error Detection', function () {
 

@@ -1,6 +1,6 @@
 const FIXED_MESSAGE = 'Raymond Ho @ 2016';
 const debug = require('debug')('timedfile');
-
+const jsdiff = require('diff');
 import git from 'git-node';
 
 import {
@@ -11,7 +11,7 @@ import {
   removePromise
 } from './file';
 
-function initRepo(repoPath){
+function initRepo(repoPath) {
   return git.repo(repoPath);
 }
 
@@ -93,7 +93,7 @@ async function saveCommit(commit) {
       repo.saveAs("commit", treeCommit, async(err, commitHash) => {
         if (err) return reject(err);
         debug('aftersave commitHash = %s', commitHash);
-        await saveCommitHead.call(that,commitHash);
+        await saveCommitHead.call(that, commitHash);
         debug('aftersave saveCommitHead');
         resolve(commitHash);
       });
@@ -163,6 +163,20 @@ async function loadText(blobHash) {
   });
 }
 
+async function diffCommits(commitHashHead, commitHashNext) {
+  const that = this;
+  const commits = await Promise.all([that::loadCommit(commitHashHead), that::loadCommit(commitHashNext)]);
+  const commitHead = commits[0];
+  const commitNext = commits[1];
+
+  const trees = await Promise.all([that::loadTree(commitHead.tree),that::loadTree(commitNext.tree)]);
+  const treeHead = trees[0];
+  const treeNext = trees[1];
+
+  const texts = await Promise.all([that::loadText(treeHead[0].hash),that::loadText(treeNext[0].hash)]);
+  return jsdiff.diffChars(texts[0], texts[1]);
+}
+
 export default {
   initRepo,
   saveBlob,
@@ -171,5 +185,6 @@ export default {
   loadCommit,
   saveCommitHead,
   saveRolls,
-  loadText
+  loadText,
+  diffCommits
 }
