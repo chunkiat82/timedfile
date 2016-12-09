@@ -81,10 +81,10 @@ class TimedFile {
 
     const contentsHash = await that::saveBlob(commit);
     debug('save - contentsHash = %s', contentsHash);
-    that.commitHash = await saveCommit.call(that, commit);
+    that.commitHash = await that::saveCommit(commit);
     debug('save - that.commitHash = %s', that.commitHash);
     that.rolls = [];
-    await saveRolls.call(that,);
+    await that::saveRolls();
 
   }
 
@@ -99,11 +99,11 @@ class TimedFile {
     const currentText = readFile.toString();
 
     if (commitHash) {
-      const headCommitDiff = await loadCommit.call(that,commitHash);
+      const headCommitDiff = await that::loadCommit(commitHash);
       debug('diff - headCommitDiffTree = %s', headCommitDiff.tree);
-      const loadTreeDiff = await loadTree.call(that,headCommitDiff.tree);
+      const loadTreeDiff = await that::loadTree(headCommitDiff.tree);
       debug('diff - loadTreeDiff[0].hash = %s', loadTreeDiff && loadTreeDiff[0].hash);
-      const retrievedText = await loadText.call(that,loadTreeDiff[0].hash);
+      const retrievedText = await that::loadText(loadTreeDiff[0].hash);
       debug('diff - retrievedText = %s', retrievedText);
       return jsdiff.diffChars(retrievedText, currentText)
     } else {
@@ -123,7 +123,7 @@ class TimedFile {
     } = that;
 
     if (commitHash) {
-      let commit = await loadCommit.call(that,commitHash);
+      let commit = await that::loadCommit(commitHash);
 
       if (commit.parents.length === 1) {
         const parentCommitHash = commit.parents[0];
@@ -132,11 +132,11 @@ class TimedFile {
           commitHash,
           commit
         });
-        await saveRolls.call(that,);
-        commit = await loadCommit.call(that,parentCommitHash);
-        const loadTreeDiff = await loadTree.call(that,commit.tree);
+        await that::saveRolls();
+        commit = await that::loadCommit(parentCommitHash);
+        const loadTreeDiff = await that::loadTree(commit.tree);
         debug('rollback - loadTreeDiff[0].hash = %s', loadTreeDiff && loadTreeDiff[0].hash);
-        const retrievedText = await loadText.call(that,loadTreeDiff[0].hash);
+        const retrievedText = await that::loadText(loadTreeDiff[0].hash);
         await writeFilePromise(fileFullPath, retrievedText);
         return retrievedText;
       } else {
@@ -154,7 +154,7 @@ class TimedFile {
     } = that;
 
     const roll = that.rolls.pop();
-    await saveRolls.call(that,);
+    await that::saveRolls();
 
     if (roll) {
       const {
@@ -162,12 +162,11 @@ class TimedFile {
         commitHash
       } = roll;
       
-      debug('fastforward - commit JSON = %s', JSON.stringify(commit));
       debug('fastforward - commit.tree - %s', commit.tree);
       that.commitHash = commitHash;
-      const loadTreeDiff = await loadTree.call(that,commit.tree);
+      const loadTreeDiff = await that::loadTree(commit.tree);
       debug('rollback - loadTreeDiff[0].hash = %s', loadTreeDiff && loadTreeDiff[0].hash);
-      const retrievedText = await loadText.call(that,loadTreeDiff[0].hash);
+      const retrievedText = await that::loadText(loadTreeDiff[0].hash);
       await writeFilePromise(fileFullPath, retrievedText);
       return retrievedText;
     }
@@ -187,9 +186,9 @@ class TimedFile {
     } = that;
 
     if (commitHash) {
-      const commit = await loadCommit.call(that,commitHash);
-      const loadTreeDiff = await loadTree.call(that,commit.tree);
-      const retrievedText = await loadText.call(that,loadTreeDiff[0].hash);
+      const commit = await that::loadCommit(commitHash);
+      const loadTreeDiff = await that::loadTree(commit.tree);
+      const retrievedText = await that::loadText(loadTreeDiff[0].hash);
       await writeFilePromise(fileFullPath, retrievedText);
       return retrievedText;
     } else {
@@ -207,9 +206,9 @@ class TimedFile {
 
     await removePromise(repoObjectsPath);
     that.rolls = [];
-    await saveRolls.call(that,);
+    await that::saveRolls();
     that.commitHash = null;
-    await saveCommitHead.call(that,that.commitHash);
+    await that::saveCommitHead(that.commitHash);
   }
 
 }
