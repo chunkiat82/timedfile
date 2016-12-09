@@ -5,7 +5,7 @@ import {
   removePromise,
   createFilePromise,
   readFileSync
-} from '../../src/lib/fileOperations';
+} from '../../src/lib/file';
 import path from 'path';
 import TimedFile from '../../src/lib/index';
 import {
