@@ -42,19 +42,19 @@ describe('TimedFile - Error Detection', function () {
       expect(diffs).to.eql(
         [
           [{
-            count: 14,
+            count: 8,
             value: 'Line 1\nLine 2\n'
           }, {
-            count: 7,
+            count: 4,
             added: true,
             removed: undefined,
             value: 'Line 3\n'
           }],
           [{
-            count: 7,
+            count: 4,
             value: 'Line 1\n'
           }, {
-            count: 7,
+            count: 4,
             added: true,
             removed: undefined,
             value: 'Line 2\n'

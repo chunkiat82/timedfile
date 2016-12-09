@@ -174,7 +174,7 @@ async function diffCommits(commitHashHead, commitHashNext) {
   const treeNext = trees[1];
 
   const texts = await Promise.all([that::loadText(treeHead[0].hash),that::loadText(treeNext[0].hash)]);
-  return jsdiff.diffSentences(texts[0], texts[1]);
+  return jsdiff.diffWords(texts[0], texts[1]);
 }
 
 export default {
