@@ -10,9 +10,34 @@ const timedfile = new TimedFile({
   versionsPath
 });
 
-fs.writeFile(fileFullPath, 'Hello World', function(err){
+const author = {
+  name: "raymond",
+  email: "chunkiat82@gmail.com"
+};
+
+console.log(`Created TimedFile`);
+
+fs.writeFile(fileFullPath, 'Hello World', async function (err) {
+  if (err) return console.log(err);
+
+  await timedfile.save(author);
+
+  console.log(`Saved TimedFile`);
+
+  fs.appendFile(fileFullPath, 'Hello World Again', async function (err) {
     if (err) return console.log(err);
-    timedfile.save();
-    timedfile.reset();
+
+    await timedfile.reset();
+
+    console.log(`Reset TimedFile`);
+
+    const retrievedText = fs.readFileSync(fileFullPath).toString();
+
+    console.log(`(retrievedText===TextInFile)\n(${retrievedText}===${'Hello World'})`);
+
+    await timedfile.clean();
+
+    console.log('Completed Example');
+  });
 });
-console.log('Completed Example');
+

@@ -4,9 +4,26 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "node index",
+    "start": "babel-node index",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "Raymond Ho <rayho@paypal.com> (http://github.paypal.com/rayho)",
-  "license": "ISC"
+  "license": "ISC",
+  "dependencies": {
+    "babel-cli": "^6.18.0",
+    "babel-core": "6.14.0",
+    "babel-eslint": "^7.1.1",
+    "babel-loader": "6.2.5",
+    "babel-plugin-add-module-exports": "^0.2.1",
+    "babel-plugin-syntax-async-functions": "^6.13.0",
+    "babel-plugin-transform-async-to-generator": "^6.16.0",
+    "babel-plugin-transform-function-bind": "^6.8.0",
+    "babel-plugin-transform-runtime": "^6.15.0",
+    "babel-polyfill": "^6.13.0",
+    "babel-preset-es2015": "^6.18.0",
+    "babel-preset-react": "^6.16.0",
+    "babel-preset-stage-0": "^6.16.0",
+    "babel-register": "6.14.0",
+    "babel-runtime": "^6.18.0"
+  }
 }
