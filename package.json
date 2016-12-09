@@ -1,6 +1,6 @@
 {
   "name": "timedfile",
-  "version": "1.5.0",
+  "version": "1.5.1",
   "description": "Timed File - versioning with files",
   "main": "dist/timedfile.min.js",
   "scripts": {
