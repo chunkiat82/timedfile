@@ -112,9 +112,9 @@ class TimedFile {
       debug('diff - loadTreeDiff[0].hash = %s', loadTreeDiff && loadTreeDiff[0].hash);
       const retrievedText = await that::loadText(loadTreeDiff[0].hash);
       debug('diff - retrievedText = %s', retrievedText);
-      return jsdiff.diffChars(retrievedText, currentText)
+      return jsdiff.diffWords(retrievedText, currentText)
     } else {
-      return jsdiff.diffChars('', currentText)
+      return jsdiff.diffWords('', currentText)
     }
   }
 
