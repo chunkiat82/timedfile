@@ -39,7 +39,7 @@ describe('TimedFile - Others', function () {
       const jsDiffs = await timedFile.diff();
       expect(jsDiffs).to.eql([{
         value: 'Line 1\n',
-        count: 7
+        count: 4
       }]);
     });
   });

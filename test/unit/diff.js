@@ -21,7 +21,7 @@ const author = {
   email: 'chunkiat82@gmail.com'
 };
 
-describe('TimedFile - Error Detection', function () {
+describe('TimedFile - Diff Detection', function () {
 
   before(async() => {
     await createFilePromise(fileFullPath);

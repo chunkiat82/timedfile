@@ -54,7 +54,7 @@ describe('TimedFile', function () {
       const jsDiffs = await timedFile.diff();
       expect(jsDiffs).to.eql([{
         value: 'Line 1\n',
-        count: 7
+        count: 4
       }]);
     });
 
@@ -69,7 +69,7 @@ describe('TimedFile', function () {
 
       const jsDiffs = await timedFile.diff();
       expect(jsDiffs).to.eql([{
-        count: 14,
+        count: 8,
         value: 'Line 1\nLine 2\n'
       }]);
 
@@ -87,10 +87,10 @@ describe('TimedFile', function () {
       const jsDiffs = await timedFile.diff();
 
       expect(jsDiffs).to.eql([{
-        "count": 14,
+        "count": 8,
         "value": "Line 1\nLine 2\n"
       }, {
-        "count": 7,
+        "count": 4,
         "added": true,
         "removed": undefined,
         "value": "Line 3\n"
@@ -107,10 +107,10 @@ describe('TimedFile', function () {
 
       const jsDiffs = await timedFile.diff();
       expect(jsDiffs).to.eql([{
-        "count": 14,
+        "count": 8,
         "value": "Line 1\nLine 2\n"
       }, {
-        "count": 7,
+        "count": 4,
         "added": true,
         "removed": undefined,
         "value": "Line 3\n"
